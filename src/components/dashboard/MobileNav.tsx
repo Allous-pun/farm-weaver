@@ -13,14 +13,14 @@ export function MobileNav({ onAddAnimal }: MobileNavProps) {
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-lg border-t border-border z-40">
       <div className="flex items-center justify-around h-16">
-        <NavItem
+        <MobileNavItem
           to="/dashboard"
           icon={<LayoutDashboard className="w-5 h-5" />}
           label="Home"
           active={location.pathname === '/dashboard'}
         />
         {selectedAnimalType && (
-          <NavItem
+          <MobileNavItem
             to="/dashboard"
             icon={<span className="text-xl">{selectedAnimalType.icon}</span>}
             label={selectedAnimalType.name}
@@ -35,13 +35,13 @@ export function MobileNav({ onAddAnimal }: MobileNavProps) {
             <Plus className="w-6 h-6 text-primary-foreground" />
           </div>
         </button>
-        <NavItem
+        <MobileNavItem
           to="/dashboard"
           icon={<Settings className="w-5 h-5" />}
           label="Settings"
           active={false}
         />
-        <NavItem
+        <MobileNavItem
           to="/dashboard"
           icon={<User className="w-5 h-5" />}
           label="Profile"
@@ -52,7 +52,7 @@ export function MobileNav({ onAddAnimal }: MobileNavProps) {
   );
 }
 
-function NavItem({
+function MobileNavItem({
   to,
   icon,
   label,
