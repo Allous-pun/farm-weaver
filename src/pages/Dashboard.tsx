@@ -8,12 +8,16 @@ import { AnimalSetupWizard } from '@/components/dashboard/AnimalSetupWizard';
 import { AnimalSelector } from '@/components/dashboard/AnimalSelector';
 import { StatsOverview } from '@/components/dashboard/StatsOverview';
 import { ModuleGrid } from '@/components/dashboard/ModuleGrid';
-import { RecentActivity } from '@/components/dashboard/RecentActivity';
-import { Bell, Menu, X } from 'lucide-react';
+import { AnimalRecordsList } from '@/components/dashboard/AnimalRecordsList';
+import { AnimalRecordForm } from '@/components/dashboard/AnimalRecordForm';
+import { AnimalRecord } from '@/types/animal';
+import { Bell, Menu, X, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function Dashboard() {
   const [isWizardOpen, setIsWizardOpen] = useState(false);
+  const [isRecordFormOpen, setIsRecordFormOpen] = useState(false);
+  const [editingRecord, setEditingRecord] = useState<AnimalRecord | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, isAuthenticated, animalTypes, selectedAnimalType, animalRecords, getStats } = useFarm();
   const navigate = useNavigate();
@@ -24,13 +28,6 @@ export default function Dashboard() {
     }
   }, [isAuthenticated, navigate]);
 
-  // Auto-select first animal if none selected
-  useEffect(() => {
-    if (animalTypes.length > 0 && !selectedAnimalType) {
-      // We don't auto-select to show the "select animal" state
-    }
-  }, [animalTypes, selectedAnimalType]);
-
   if (!isAuthenticated) {
     return null;
   }
@@ -40,6 +37,21 @@ export default function Dashboard() {
     ? animalRecords.filter(r => r.animalTypeId === selectedAnimalType.id)
     : [];
   const stats = selectedAnimalType ? getStats(selectedAnimalType.id) : null;
+
+  const handleAddRecord = () => {
+    setEditingRecord(null);
+    setIsRecordFormOpen(true);
+  };
+
+  const handleEditRecord = (record: AnimalRecord) => {
+    setEditingRecord(record);
+    setIsRecordFormOpen(true);
+  };
+
+  const handleCloseRecordForm = () => {
+    setIsRecordFormOpen(false);
+    setEditingRecord(null);
+  };
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -77,6 +89,18 @@ export default function Dashboard() {
 
             {/* Right Side */}
             <div className="flex items-center gap-3">
+              {/* Quick Add Record Button */}
+              {selectedAnimalType && (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={handleAddRecord}
+                  className="hidden sm:flex"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add {selectedAnimalType.name}
+                </Button>
+              )}
               <Button variant="ghost" size="icon" className="relative">
                 <Bell className="w-5 h-5" />
                 {stats && stats.alertsCount > 0 && (
@@ -115,19 +139,32 @@ export default function Dashboard() {
           ) : (
             <div className="space-y-6 animate-fade-in">
               {/* Header */}
-              <div className="flex items-center gap-4">
-                <div
-                  className="w-16 h-16 rounded-2xl flex items-center justify-center text-4xl"
-                  style={{ backgroundColor: selectedAnimalType.color + '20' }}
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center gap-4">
+                  <div
+                    className="w-16 h-16 rounded-2xl flex items-center justify-center text-4xl"
+                    style={{ backgroundColor: selectedAnimalType.color + '20' }}
+                  >
+                    {selectedAnimalType.icon}
+                  </div>
+                  <div>
+                    <h1 className="text-2xl md:text-3xl font-display font-bold">{selectedAnimalType.name} Dashboard</h1>
+                    <p className="text-muted-foreground capitalize">
+                      {selectedAnimalType.category} • {currentRecords.length} total
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Mobile Add Button */}
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={handleAddRecord}
+                  className="sm:hidden"
                 >
-                  {selectedAnimalType.icon}
-                </div>
-                <div>
-                  <h1 className="text-2xl md:text-3xl font-display font-bold">{selectedAnimalType.name} Dashboard</h1>
-                  <p className="text-muted-foreground capitalize">
-                    {selectedAnimalType.category} • {currentRecords.length} total
-                  </p>
-                </div>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add
+                </Button>
               </div>
 
               {/* Stats */}
@@ -148,8 +185,13 @@ export default function Dashboard() {
                 />
               </div>
 
-              {/* Recent Activity */}
-              <RecentActivity records={currentRecords} animalName={selectedAnimalType.name} />
+              {/* Animal Records List */}
+              <AnimalRecordsList
+                records={currentRecords}
+                animalType={selectedAnimalType}
+                onAddNew={handleAddRecord}
+                onEdit={handleEditRecord}
+              />
             </div>
           )}
         </div>
@@ -163,6 +205,16 @@ export default function Dashboard() {
         isOpen={isWizardOpen}
         onClose={() => setIsWizardOpen(false)}
       />
+
+      {/* Animal Record Form */}
+      {selectedAnimalType && (
+        <AnimalRecordForm
+          isOpen={isRecordFormOpen}
+          onClose={handleCloseRecordForm}
+          animalType={selectedAnimalType}
+          editingRecord={editingRecord}
+        />
+      )}
     </div>
   );
 }
