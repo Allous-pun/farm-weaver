@@ -26,9 +26,10 @@ interface AnimalRecordsListProps {
   animalType: AnimalType;
   onAddNew: () => void;
   onEdit: (record: AnimalRecord) => void;
+  showViewAll?: () => void;
 }
 
-export function AnimalRecordsList({ records, animalType, onAddNew, onEdit }: AnimalRecordsListProps) {
+export function AnimalRecordsList({ records, animalType, onAddNew, onEdit, showViewAll }: AnimalRecordsListProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState<AnimalRecord | null>(null);
   const { deleteAnimalRecord } = useFarm();
@@ -57,12 +58,19 @@ export function AnimalRecordsList({ records, animalType, onAddNew, onEdit }: Ani
       <div className="flex items-center justify-between p-4 md:p-6 border-b border-border/50">
         <div>
           <h3 className="font-display font-semibold text-lg">{animalType.name} Records</h3>
-          <p className="text-sm text-muted-foreground">{records.length} total</p>
+          <p className="text-sm text-muted-foreground">{records.length} {showViewAll ? 'recent' : 'total'}</p>
         </div>
-        <Button onClick={onAddNew} size="sm">
-          <Plus className="w-4 h-4 mr-2" />
-          Add {animalType.name}
-        </Button>
+        <div className="flex gap-2">
+          {showViewAll && (
+            <Button onClick={showViewAll} variant="outline" size="sm">
+              View All
+            </Button>
+          )}
+          <Button onClick={onAddNew} size="sm">
+            <Plus className="w-4 h-4 mr-2" />
+            Add {animalType.name}
+          </Button>
+        </div>
       </div>
 
       {/* Records List */}
