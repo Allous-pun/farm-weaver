@@ -21,7 +21,7 @@ export default function Dashboard() {
   const [editingRecord, setEditingRecord] = useState<AnimalRecord | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeModule, setActiveModule] = useState<string | null>(null);
-  const { user, isAuthenticated, animalTypes, selectedAnimalType, animalRecords, getStats } = useFarm();
+  const { user, isAuthenticated, animalTypes, selectedAnimalType, selectAnimalType, animalRecords, getStats } = useFarm();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -29,6 +29,13 @@ export default function Dashboard() {
       navigate('/login');
     }
   }, [isAuthenticated, navigate]);
+
+  // Auto-select first animal if none selected but animals exist
+  useEffect(() => {
+    if (animalTypes.length > 0 && !selectedAnimalType) {
+      selectAnimalType(animalTypes[0].id);
+    }
+  }, [animalTypes, selectedAnimalType, selectAnimalType]);
 
   if (!isAuthenticated) {
     return null;
