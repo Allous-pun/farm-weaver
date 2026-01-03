@@ -1,6 +1,5 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useFarm } from '@/context/FarmContext';
-import { TrackingFeature } from '@/types/animal';
 import { 
   Leaf, 
   LayoutDashboard, 
@@ -18,7 +17,7 @@ import {
   Package,
   BarChart3
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface DashboardSidebarProps {
   onAddAnimal: () => void;
@@ -49,26 +48,34 @@ const MODULE_LABELS: Record<string, string> = {
 export function DashboardSidebar({ onAddAnimal, activeModule, onModuleSelect }: DashboardSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [expandedAnimal, setExpandedAnimal] = useState<string | null>(null);
-  const { user, animalTypes, selectedAnimalType, selectAnimalType, logout } = useFarm();
+  const { user, animalTypes, selectedAnimalType, logout } = useFarm();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  // Extract current animal ID from URL
+  const pathMatch = location.pathname.match(/\/dashboard\/animal\/([^/]+)/);
+  const currentAnimalId = pathMatch ? pathMatch[1] : null;
+  const currentModule = location.pathname.split('/').pop();
+  const isOnModule = currentAnimalId && currentModule && currentModule !== currentAnimalId;
+
+  // Auto-expand current animal
+  useEffect(() => {
+    if (currentAnimalId) {
+      setExpandedAnimal(currentAnimalId);
+    }
+  }, [currentAnimalId]);
 
   const handleAnimalClick = (animalId: string) => {
-    if (selectedAnimalType?.id === animalId) {
-      // Toggle expansion if already selected
+    if (currentAnimalId === animalId) {
+      // Toggle expansion
       setExpandedAnimal(expandedAnimal === animalId ? null : animalId);
     } else {
-      selectAnimalType(animalId);
       setExpandedAnimal(animalId);
-      onModuleSelect(null); // Reset to overview
+      navigate(`/dashboard/animal/${animalId}`);
     }
   };
 
-  const handleModuleClick = (animalId: string, module: string) => {
-    if (selectedAnimalType?.id !== animalId) {
-      selectAnimalType(animalId);
-    }
-    onModuleSelect(module);
-  };
+  const isMainDashboard = location.pathname === '/dashboard';
 
   return (
     <aside
@@ -93,11 +100,7 @@ export function DashboardSidebar({ onAddAnimal, activeModule, onModuleSelect }: 
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
         <Link
           to="/dashboard"
-          onClick={() => {
-            selectAnimalType(null);
-            onModuleSelect(null);
-          }}
-          className={`nav-link ${!selectedAnimalType && location.pathname === '/dashboard' ? 'active' : ''}`}
+          className={`nav-link ${isMainDashboard ? 'active' : ''}`}
         >
           <LayoutDashboard className="w-5 h-5 flex-shrink-0" />
           {!collapsed && <span>Dashboard</span>}
@@ -112,8 +115,8 @@ export function DashboardSidebar({ onAddAnimal, activeModule, onModuleSelect }: 
               </div>
             )}
             {animalTypes.map((animal) => {
-              const isExpanded = expandedAnimal === animal.id || selectedAnimalType?.id === animal.id;
-              const isSelected = selectedAnimalType?.id === animal.id;
+              const isExpanded = expandedAnimal === animal.id;
+              const isSelected = currentAnimalId === animal.id;
               
               // Always include 'records' module plus enabled features
               const modules: string[] = ['records', ...animal.features];
@@ -123,7 +126,7 @@ export function DashboardSidebar({ onAddAnimal, activeModule, onModuleSelect }: 
                   {/* Animal Type Header */}
                   <button
                     onClick={() => handleAnimalClick(animal.id)}
-                    className={`nav-link w-full justify-between ${isSelected && !activeModule ? 'active' : ''}`}
+                    className={`nav-link w-full justify-between ${isSelected && !isOnModule ? 'active' : ''}`}
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-xl flex-shrink-0">{animal.icon}</span>
@@ -141,17 +144,17 @@ export function DashboardSidebar({ onAddAnimal, activeModule, onModuleSelect }: 
                     <div className="ml-4 pl-4 border-l border-sidebar-border/50 space-y-0.5">
                       {modules.map((module) => {
                         const Icon = MODULE_ICONS[module] || ClipboardList;
-                        const isModuleActive = isSelected && activeModule === module;
+                        const isModuleActive = isSelected && currentModule === module;
                         
                         return (
-                          <button
+                          <Link
                             key={module}
-                            onClick={() => handleModuleClick(animal.id, module)}
+                            to={`/dashboard/animal/${animal.id}/${module}`}
                             className={`nav-link w-full text-sm py-2 ${isModuleActive ? 'active' : ''}`}
                           >
                             <Icon className="w-4 h-4 flex-shrink-0" />
                             <span className="truncate">{MODULE_LABELS[module] || module}</span>
-                          </button>
+                          </Link>
                         );
                       })}
                     </div>
