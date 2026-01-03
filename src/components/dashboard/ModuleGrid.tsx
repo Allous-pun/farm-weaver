@@ -4,15 +4,22 @@ import { ArrowRight } from 'lucide-react';
 interface ModuleGridProps {
   enabledFeatures: TrackingFeature[];
   animalName: string;
+  onModuleClick?: (module: string) => void;
 }
 
-export function ModuleGrid({ enabledFeatures, animalName }: ModuleGridProps) {
+export function ModuleGrid({ enabledFeatures, animalName, onModuleClick }: ModuleGridProps) {
   const enabledModules = FEATURE_OPTIONS.filter(f => enabledFeatures.includes(f.value));
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {enabledModules.map((module, index) => (
-        <ModuleCard key={module.value} module={module} animalName={animalName} index={index} />
+        <ModuleCard 
+          key={module.value} 
+          module={module} 
+          animalName={animalName} 
+          index={index}
+          onClick={() => onModuleClick?.(module.value)}
+        />
       ))}
     </div>
   );
@@ -22,15 +29,17 @@ interface ModuleCardProps {
   module: typeof FEATURE_OPTIONS[0];
   animalName: string;
   index: number;
+  onClick?: () => void;
 }
 
-function ModuleCard({ module, animalName, index }: ModuleCardProps) {
+function ModuleCard({ module, animalName, index, onClick }: ModuleCardProps) {
   // Mock data based on module type
   const mockData = getMockData(module.value);
 
   return (
-    <div 
-      className="module-card group"
+    <button 
+      onClick={onClick}
+      className="module-card group text-left w-full"
       style={{ animationDelay: `${index * 0.1}s` }}
     >
       <div className="flex items-start justify-between mb-4">
@@ -58,7 +67,7 @@ function ModuleCard({ module, animalName, index }: ModuleCardProps) {
           {mockData.status.text}
         </div>
       )}
-    </div>
+    </button>
   );
 }
 

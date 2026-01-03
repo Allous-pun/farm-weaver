@@ -8,10 +8,11 @@ import { AnimalSetupWizard } from '@/components/dashboard/AnimalSetupWizard';
 import { AnimalSelector } from '@/components/dashboard/AnimalSelector';
 import { StatsOverview } from '@/components/dashboard/StatsOverview';
 import { ModuleGrid } from '@/components/dashboard/ModuleGrid';
+import { ModuleContent } from '@/components/dashboard/ModuleContent';
 import { AnimalRecordsList } from '@/components/dashboard/AnimalRecordsList';
 import { AnimalRecordForm } from '@/components/dashboard/AnimalRecordForm';
 import { AnimalRecord } from '@/types/animal';
-import { Bell, Menu, X, Plus } from 'lucide-react';
+import { Bell, Menu, X, Plus, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function Dashboard() {
@@ -19,6 +20,7 @@ export default function Dashboard() {
   const [isRecordFormOpen, setIsRecordFormOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<AnimalRecord | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeModule, setActiveModule] = useState<string | null>(null);
   const { user, isAuthenticated, animalTypes, selectedAnimalType, animalRecords, getStats } = useFarm();
   const navigate = useNavigate();
 
@@ -57,7 +59,11 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background flex">
       {/* Desktop Sidebar */}
       <div className="relative">
-        <DashboardSidebar onAddAnimal={() => setIsWizardOpen(true)} />
+        <DashboardSidebar 
+          onAddAnimal={() => setIsWizardOpen(true)} 
+          activeModule={activeModule}
+          onModuleSelect={setActiveModule}
+        />
       </div>
 
       {/* Main Content */}
@@ -136,7 +142,56 @@ export default function Dashboard() {
               <h2 className="text-2xl font-display font-bold mb-2">Select an Animal</h2>
               <p className="text-muted-foreground">Choose an animal from the sidebar to view its dashboard</p>
             </div>
+          ) : activeModule ? (
+            // Module-specific view
+            <div className="space-y-4 animate-fade-in">
+              {/* Back button */}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setActiveModule(null)}
+                className="mb-2"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to {selectedAnimalType.name} Overview
+              </Button>
+              
+              {activeModule === 'records' ? (
+                // Show Animal Records List for the records module
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between flex-wrap gap-4">
+                    <div className="flex items-center gap-4">
+                      <div
+                        className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl"
+                        style={{ backgroundColor: selectedAnimalType.color + '20' }}
+                      >
+                        {selectedAnimalType.icon}
+                      </div>
+                      <div>
+                        <h1 className="text-2xl md:text-3xl font-display font-bold">Animal Records</h1>
+                        <p className="text-muted-foreground">
+                          {selectedAnimalType.name} • {currentRecords.length} total records
+                        </p>
+                      </div>
+                    </div>
+                    <Button onClick={handleAddRecord}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add {selectedAnimalType.name}
+                    </Button>
+                  </div>
+                  <AnimalRecordsList
+                    records={currentRecords}
+                    animalType={selectedAnimalType}
+                    onAddNew={handleAddRecord}
+                    onEdit={handleEditRecord}
+                  />
+                </div>
+              ) : (
+                <ModuleContent module={activeModule} animalType={selectedAnimalType} />
+              )}
+            </div>
           ) : (
+            // Animal overview (default when animal selected but no module)
             <div className="space-y-6 animate-fade-in">
               {/* Header */}
               <div className="flex items-center justify-between flex-wrap gap-4">
@@ -182,15 +237,17 @@ export default function Dashboard() {
                 <ModuleGrid
                   enabledFeatures={selectedAnimalType.features}
                   animalName={selectedAnimalType.name}
+                  onModuleClick={setActiveModule}
                 />
               </div>
 
-              {/* Animal Records List */}
+              {/* Recent Animal Records */}
               <AnimalRecordsList
-                records={currentRecords}
+                records={currentRecords.slice(0, 5)}
                 animalType={selectedAnimalType}
                 onAddNew={handleAddRecord}
                 onEdit={handleEditRecord}
+                showViewAll={() => setActiveModule('records')}
               />
             </div>
           )}

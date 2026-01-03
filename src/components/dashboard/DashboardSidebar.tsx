@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useFarm } from '@/context/FarmContext';
+import { TrackingFeature } from '@/types/animal';
 import { 
   Leaf, 
   LayoutDashboard, 
@@ -7,19 +8,67 @@ import {
   Settings, 
   LogOut,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  ChevronDown,
+  ClipboardList,
+  Wheat,
+  Stethoscope,
+  Baby,
+  Dna,
+  Package,
+  BarChart3
 } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 
 interface DashboardSidebarProps {
   onAddAnimal: () => void;
+  activeModule: string | null;
+  onModuleSelect: (module: string | null) => void;
 }
 
-export function DashboardSidebar({ onAddAnimal }: DashboardSidebarProps) {
+const MODULE_ICONS: Record<string, React.ElementType> = {
+  records: ClipboardList,
+  feed: Wheat,
+  health: Stethoscope,
+  reproduction: Baby,
+  genetics: Dna,
+  inventory: Package,
+  production: BarChart3,
+};
+
+const MODULE_LABELS: Record<string, string> = {
+  records: 'Animal Records',
+  feed: 'Feed Management',
+  health: 'Health & Vaccinations',
+  reproduction: 'Reproduction',
+  genetics: 'Genetics & Breeding',
+  inventory: 'Inventory & Sales',
+  production: 'Production',
+};
+
+export function DashboardSidebar({ onAddAnimal, activeModule, onModuleSelect }: DashboardSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const [expandedAnimal, setExpandedAnimal] = useState<string | null>(null);
   const { user, animalTypes, selectedAnimalType, selectAnimalType, logout } = useFarm();
   const location = useLocation();
+
+  const handleAnimalClick = (animalId: string) => {
+    if (selectedAnimalType?.id === animalId) {
+      // Toggle expansion if already selected
+      setExpandedAnimal(expandedAnimal === animalId ? null : animalId);
+    } else {
+      selectAnimalType(animalId);
+      setExpandedAnimal(animalId);
+      onModuleSelect(null); // Reset to overview
+    }
+  };
+
+  const handleModuleClick = (animalId: string, module: string) => {
+    if (selectedAnimalType?.id !== animalId) {
+      selectAnimalType(animalId);
+    }
+    onModuleSelect(module);
+  };
 
   return (
     <aside
@@ -44,13 +93,17 @@ export function DashboardSidebar({ onAddAnimal }: DashboardSidebarProps) {
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
         <Link
           to="/dashboard"
-          className={`nav-link ${location.pathname === '/dashboard' ? 'active' : ''}`}
+          onClick={() => {
+            selectAnimalType(null);
+            onModuleSelect(null);
+          }}
+          className={`nav-link ${!selectedAnimalType && location.pathname === '/dashboard' ? 'active' : ''}`}
         >
           <LayoutDashboard className="w-5 h-5 flex-shrink-0" />
           {!collapsed && <span>Dashboard</span>}
         </Link>
 
-        {/* Animal Types */}
+        {/* Animal Types with Modules */}
         {animalTypes.length > 0 && (
           <>
             {!collapsed && (
@@ -58,16 +111,54 @@ export function DashboardSidebar({ onAddAnimal }: DashboardSidebarProps) {
                 Your Animals
               </div>
             )}
-            {animalTypes.map((animal) => (
-              <button
-                key={animal.id}
-                onClick={() => selectAnimalType(animal.id)}
-                className={`nav-link w-full ${selectedAnimalType?.id === animal.id ? 'active' : ''}`}
-              >
-                <span className="text-xl flex-shrink-0">{animal.icon}</span>
-                {!collapsed && <span className="truncate">{animal.name}</span>}
-              </button>
-            ))}
+            {animalTypes.map((animal) => {
+              const isExpanded = expandedAnimal === animal.id || selectedAnimalType?.id === animal.id;
+              const isSelected = selectedAnimalType?.id === animal.id;
+              
+              // Always include 'records' module plus enabled features
+              const modules: string[] = ['records', ...animal.features];
+
+              return (
+                <div key={animal.id} className="space-y-0.5">
+                  {/* Animal Type Header */}
+                  <button
+                    onClick={() => handleAnimalClick(animal.id)}
+                    className={`nav-link w-full justify-between ${isSelected && !activeModule ? 'active' : ''}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl flex-shrink-0">{animal.icon}</span>
+                      {!collapsed && <span className="truncate">{animal.name}</span>}
+                    </div>
+                    {!collapsed && (
+                      <ChevronDown 
+                        className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} 
+                      />
+                    )}
+                  </button>
+
+                  {/* Module Sub-items */}
+                  {!collapsed && isExpanded && (
+                    <div className="ml-4 pl-4 border-l border-sidebar-border/50 space-y-0.5">
+                      {modules.map((module) => {
+                        const Icon = MODULE_ICONS[module] || ClipboardList;
+                        const isModuleActive = isSelected && activeModule === module;
+                        
+                        return (
+                          <button
+                            key={module}
+                            onClick={() => handleModuleClick(animal.id, module)}
+                            className={`nav-link w-full text-sm py-2 ${isModuleActive ? 'active' : ''}`}
+                          >
+                            <Icon className="w-4 h-4 flex-shrink-0" />
+                            <span className="truncate">{MODULE_LABELS[module] || module}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </>
         )}
 
