@@ -88,7 +88,7 @@ export function MobileSidebar({ isOpen, onClose, onAddAnimal }: MobileSidebarPro
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side="left" className="w-80 p-0 bg-sidebar">
+      <SheetContent side="left" className="w-80 p-0 bg-sidebar [&>button]:hidden">
         <SheetHeader className="sr-only">
           <SheetTitle>Navigation Menu</SheetTitle>
         </SheetHeader>
