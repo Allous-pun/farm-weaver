@@ -10,6 +10,9 @@ import { ModuleGrid } from '@/components/dashboard/ModuleGrid';
 import { ModuleContent } from '@/components/dashboard/ModuleContent';
 import { AnimalRecordsList } from '@/components/dashboard/AnimalRecordsList';
 import { AnimalRecordForm } from '@/components/dashboard/AnimalRecordForm';
+import { QuickAddHealthForm } from '@/components/dashboard/QuickAddHealthForm';
+import { QuickAddFeedingForm } from '@/components/dashboard/QuickAddFeedingForm';
+import { QuickAddBreedingForm } from '@/components/dashboard/QuickAddBreedingForm';
 import { AnimalRecord } from '@/types/animal';
 import { Bell, Menu, Plus, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -20,6 +23,7 @@ export default function AnimalDashboard() {
   const [isRecordFormOpen, setIsRecordFormOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<AnimalRecord | null>(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [activeQuickForm, setActiveQuickForm] = useState<string | null>(null);
   const { user, isAuthenticated, animalTypes, animalRecords, getStats, selectAnimalType } = useFarm();
   const navigate = useNavigate();
 
@@ -79,6 +83,10 @@ export default function AnimalDashboard() {
     } else {
       navigate(`/dashboard/animal/${animalId}`);
     }
+  };
+
+  const handleQuickAction = (actionId: string) => {
+    setActiveQuickForm(actionId);
   };
 
   return (
@@ -244,15 +252,6 @@ export default function AnimalDashboard() {
                   onModuleClick={handleModuleSelect}
                 />
               </div>
-
-              {/* Recent Animal Records */}
-              <AnimalRecordsList
-                records={currentRecords.slice(0, 5)}
-                animalType={animalType}
-                onAddNew={handleAddRecord}
-                onEdit={handleEditRecord}
-                showViewAll={() => navigate(`/dashboard/animal/${animalId}/records`)}
-              />
             </div>
           )}
         </div>
@@ -262,6 +261,7 @@ export default function AnimalDashboard() {
       <MobileFAB
         onAddAnimal={() => setIsWizardOpen(true)}
         onAddRecord={handleAddRecord}
+        onQuickAction={handleQuickAction}
         enabledFeatures={animalType.features}
         animalId={animalId}
       />
@@ -278,6 +278,23 @@ export default function AnimalDashboard() {
         onClose={handleCloseRecordForm}
         animalType={animalType}
         editingRecord={editingRecord}
+      />
+
+      {/* Quick Add Forms */}
+      <QuickAddHealthForm
+        isOpen={activeQuickForm === 'health'}
+        onClose={() => setActiveQuickForm(null)}
+        animalType={animalType}
+      />
+      <QuickAddFeedingForm
+        isOpen={activeQuickForm === 'feed'}
+        onClose={() => setActiveQuickForm(null)}
+        animalType={animalType}
+      />
+      <QuickAddBreedingForm
+        isOpen={activeQuickForm === 'reproduction'}
+        onClose={() => setActiveQuickForm(null)}
+        animalType={animalType}
       />
     </div>
   );
