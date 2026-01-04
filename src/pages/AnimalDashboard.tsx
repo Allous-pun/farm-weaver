@@ -262,7 +262,8 @@ export default function AnimalDashboard() {
       <MobileFAB
         onAddAnimal={() => setIsWizardOpen(true)}
         onAddRecord={handleAddRecord}
-        showAddRecord={true}
+        enabledFeatures={animalType.features}
+        animalId={animalId}
       />
 
       {/* Setup Wizard */}
