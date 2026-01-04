@@ -1,8 +1,6 @@
 import { Plus, ClipboardList, Leaf, Wheat, Stethoscope, Baby, X } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { useNavigate } from 'react-router-dom';
-import { toast } from '@/hooks/use-toast';
 
 interface QuickAction {
   id: string;
@@ -14,6 +12,7 @@ interface QuickAction {
 interface MobileFABProps {
   onAddAnimal: () => void;
   onAddRecord?: () => void;
+  onQuickAction?: (actionId: string) => void;
   enabledFeatures?: string[];
   animalId?: string;
 }
@@ -25,9 +24,8 @@ const QUICK_ACTIONS: Record<string, QuickAction> = {
   reproduction: { id: 'reproduction', label: 'Breeding Log', icon: Baby, color: 'bg-pink-500' },
 };
 
-export function MobileFAB({ onAddAnimal, onAddRecord, enabledFeatures = [], animalId }: MobileFABProps) {
+export function MobileFAB({ onAddAnimal, onAddRecord, onQuickAction, enabledFeatures = [], animalId }: MobileFABProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const navigate = useNavigate();
   
   // Build available actions based on enabled features
   const availableActions: QuickAction[] = [
@@ -52,13 +50,8 @@ export function MobileFAB({ onAddAnimal, onAddRecord, enabledFeatures = [], anim
     
     if (action.id === 'records' && onAddRecord) {
       onAddRecord();
-    } else if (animalId) {
-      // Navigate to the module and show a toast for coming soon features
-      navigate(`/dashboard/animal/${animalId}/${action.id}`);
-      toast({
-        title: `${action.label}`,
-        description: "Quick add form coming soon! Navigated to module.",
-      });
+    } else if (onQuickAction) {
+      onQuickAction(action.id);
     }
   };
 
