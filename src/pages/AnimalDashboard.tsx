@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useFarm } from '@/context/FarmContext';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
-import { MobileNav } from '@/components/dashboard/MobileNav';
+import { MobileSidebar } from '@/components/dashboard/MobileSidebar';
 import { AnimalSetupWizard } from '@/components/dashboard/AnimalSetupWizard';
 import { StatsOverview } from '@/components/dashboard/StatsOverview';
 import { ModuleGrid } from '@/components/dashboard/ModuleGrid';
@@ -10,7 +10,7 @@ import { ModuleContent } from '@/components/dashboard/ModuleContent';
 import { AnimalRecordsList } from '@/components/dashboard/AnimalRecordsList';
 import { AnimalRecordForm } from '@/components/dashboard/AnimalRecordForm';
 import { AnimalRecord } from '@/types/animal';
-import { Bell, Menu, X, Plus, ArrowLeft } from 'lucide-react';
+import { Bell, Menu, Plus, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function AnimalDashboard() {
@@ -18,7 +18,7 @@ export default function AnimalDashboard() {
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [isRecordFormOpen, setIsRecordFormOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<AnimalRecord | null>(null);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const { user, isAuthenticated, animalTypes, animalRecords, getStats, selectAnimalType } = useFarm();
   const navigate = useNavigate();
 
@@ -81,7 +81,7 @@ export default function AnimalDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background flex w-full">
       {/* Desktop Sidebar */}
       <div className="relative">
         <DashboardSidebar 
@@ -91,17 +91,24 @@ export default function AnimalDashboard() {
         />
       </div>
 
+      {/* Mobile Sidebar */}
+      <MobileSidebar
+        isOpen={isMobileSidebarOpen}
+        onClose={() => setIsMobileSidebarOpen(false)}
+        onAddAnimal={() => setIsWizardOpen(true)}
+      />
+
       {/* Main Content */}
-      <main className="flex-1 min-h-screen pb-20 md:pb-0">
+      <main className="flex-1 min-h-screen">
         {/* Top Bar */}
         <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-lg border-b border-border/50">
           <div className="flex items-center justify-between px-4 md:px-6 h-16">
             {/* Mobile Menu Button */}
             <button
-              className="md:hidden p-2"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden p-2 -ml-2"
+              onClick={() => setIsMobileSidebarOpen(true)}
             >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              <Menu className="w-6 h-6" />
             </button>
 
             {/* Page Title */}
@@ -249,9 +256,6 @@ export default function AnimalDashboard() {
           )}
         </div>
       </main>
-
-      {/* Mobile Navigation */}
-      <MobileNav onAddAnimal={() => setIsWizardOpen(true)} />
 
       {/* Setup Wizard */}
       <AnimalSetupWizard
