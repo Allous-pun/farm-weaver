@@ -4,6 +4,7 @@ import { useFarm } from '@/context/FarmContext';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
 import { MobileSidebar } from '@/components/dashboard/MobileSidebar';
 import { AnimalSetupWizard } from '@/components/dashboard/AnimalSetupWizard';
+import { MobileFAB } from '@/components/dashboard/MobileFAB';
 import { StatsOverview } from '@/components/dashboard/StatsOverview';
 import { ModuleGrid } from '@/components/dashboard/ModuleGrid';
 import { ModuleContent } from '@/components/dashboard/ModuleContent';
@@ -256,6 +257,13 @@ export default function AnimalDashboard() {
           )}
         </div>
       </main>
+
+      {/* Mobile FAB */}
+      <MobileFAB
+        onAddAnimal={() => setIsWizardOpen(true)}
+        onAddRecord={handleAddRecord}
+        showAddRecord={true}
+      />
 
       {/* Setup Wizard */}
       <AnimalSetupWizard

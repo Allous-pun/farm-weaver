@@ -5,6 +5,7 @@ import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
 import { MobileSidebar } from '@/components/dashboard/MobileSidebar';
 import { EmptyState } from '@/components/dashboard/EmptyState';
 import { AnimalSetupWizard } from '@/components/dashboard/AnimalSetupWizard';
+import { MobileFAB } from '@/components/dashboard/MobileFAB';
 import { FarmOverview } from '@/components/dashboard/FarmOverview';
 import { Bell, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -93,6 +94,9 @@ export default function Dashboard() {
           )}
         </div>
       </main>
+
+      {/* Mobile FAB */}
+      <MobileFAB onAddAnimal={() => setIsWizardOpen(true)} />
 
       {/* Setup Wizard */}
       <AnimalSetupWizard
