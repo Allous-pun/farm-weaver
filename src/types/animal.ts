@@ -15,8 +15,16 @@ export interface AnimalTerminology {
   birthEventName: string;
 }
 
+export interface Farm {
+  id: string;
+  name: string;
+  location?: string;
+  createdAt: Date;
+}
+
 export interface AnimalType {
   id: string;
+  farmId: string;
   name: string;
   category: AnimalCategory;
   icon: string;

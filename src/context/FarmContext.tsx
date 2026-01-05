@@ -1,23 +1,28 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { AnimalType, AnimalRecord, DashboardStats } from '@/types/animal';
+import { AnimalType, AnimalRecord, DashboardStats, Farm } from '@/types/animal';
 
 interface User {
   id: string;
   name: string;
   email: string;
-  farmName: string;
 }
 
 interface FarmContextType {
   user: User | null;
+  farms: Farm[];
+  selectedFarm: Farm | null;
   animalTypes: AnimalType[];
   selectedAnimalType: AnimalType | null;
   animalRecords: AnimalRecord[];
   isAuthenticated: boolean;
   login: (email: string, password: string) => void;
-  register: (name: string, email: string, password: string, farmName: string) => void;
+  register: (name: string, email: string, password: string, initialFarmName: string) => void;
   logout: () => void;
-  addAnimalType: (animalType: Omit<AnimalType, 'id' | 'createdAt'>) => void;
+  addFarm: (name: string, location?: string) => Farm;
+  updateFarm: (id: string, updates: Partial<Farm>) => void;
+  deleteFarm: (id: string) => void;
+  selectFarm: (id: string | null) => void;
+  addAnimalType: (animalType: Omit<AnimalType, 'id' | 'createdAt' | 'farmId'>) => void;
   updateAnimalType: (id: string, updates: Partial<AnimalType>) => void;
   deleteAnimalType: (id: string) => void;
   selectAnimalType: (id: string | null) => void;
@@ -31,6 +36,8 @@ const FarmContext = createContext<FarmContextType | undefined>(undefined);
 
 const STORAGE_KEYS = {
   user: 'farmapp_user',
+  farms: 'farmapp_farms',
+  selectedFarmId: 'farmapp_selected_farm',
   animalTypes: 'farmapp_animal_types',
   animalRecords: 'farmapp_animal_records',
   selectedAnimalTypeId: 'farmapp_selected_animal_type',
@@ -40,6 +47,21 @@ export function FarmProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
     const stored = localStorage.getItem(STORAGE_KEYS.user);
     return stored ? JSON.parse(stored) : null;
+  });
+
+  const [farms, setFarms] = useState<Farm[]>(() => {
+    const stored = localStorage.getItem(STORAGE_KEYS.farms);
+    return stored ? JSON.parse(stored) : [];
+  });
+
+  const [selectedFarm, setSelectedFarm] = useState<Farm | null>(() => {
+    const storedId = localStorage.getItem(STORAGE_KEYS.selectedFarmId);
+    const storedFarms = localStorage.getItem(STORAGE_KEYS.farms);
+    if (storedId && storedFarms) {
+      const farmList = JSON.parse(storedFarms);
+      return farmList.find((f: Farm) => f.id === storedId) || null;
+    }
+    return null;
   });
 
   const [animalTypes, setAnimalTypes] = useState<AnimalType[]>(() => {
@@ -72,6 +94,18 @@ export function FarmProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.farms, JSON.stringify(farms));
+  }, [farms]);
+
+  useEffect(() => {
+    if (selectedFarm) {
+      localStorage.setItem(STORAGE_KEYS.selectedFarmId, selectedFarm.id);
+    } else {
+      localStorage.removeItem(STORAGE_KEYS.selectedFarmId);
+    }
+  }, [selectedFarm]);
+
+  useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.animalTypes, JSON.stringify(animalTypes));
   }, [animalTypes]);
 
@@ -87,36 +121,100 @@ export function FarmProvider({ children }: { children: ReactNode }) {
     }
   }, [selectedAnimalType]);
 
+  // Filter animal types by selected farm
+  const farmAnimalTypes = selectedFarm 
+    ? animalTypes.filter(t => t.farmId === selectedFarm.id)
+    : [];
+
   const login = (email: string, _password: string) => {
-    // Mock login - in real app this would validate credentials
     const mockUser: User = {
       id: 'user_' + Date.now(),
       name: email.split('@')[0],
       email,
-      farmName: 'My Farm',
     };
     setUser(mockUser);
+    
+    // Auto-select first farm if available
+    if (farms.length > 0 && !selectedFarm) {
+      setSelectedFarm(farms[0]);
+    }
   };
 
-  const register = (name: string, email: string, _password: string, farmName: string) => {
+  const register = (name: string, email: string, _password: string, initialFarmName: string) => {
     const newUser: User = {
       id: 'user_' + Date.now(),
       name,
       email,
-      farmName,
     };
     setUser(newUser);
+
+    // Create initial farm
+    const newFarm: Farm = {
+      id: 'farm_' + Date.now(),
+      name: initialFarmName,
+      createdAt: new Date(),
+    };
+    setFarms([newFarm]);
+    setSelectedFarm(newFarm);
   };
 
   const logout = () => {
     setUser(null);
+    setSelectedFarm(null);
     setSelectedAnimalType(null);
   };
 
-  const addAnimalType = (animalType: Omit<AnimalType, 'id' | 'createdAt'>) => {
+  const addFarm = (name: string, location?: string): Farm => {
+    const newFarm: Farm = {
+      id: 'farm_' + Date.now(),
+      name,
+      location,
+      createdAt: new Date(),
+    };
+    setFarms(prev => [...prev, newFarm]);
+    return newFarm;
+  };
+
+  const updateFarm = (id: string, updates: Partial<Farm>) => {
+    setFarms(prev =>
+      prev.map(farm => (farm.id === id ? { ...farm, ...updates } : farm))
+    );
+    if (selectedFarm?.id === id) {
+      setSelectedFarm(prev => prev ? { ...prev, ...updates } : null);
+    }
+  };
+
+  const deleteFarm = (id: string) => {
+    setFarms(prev => prev.filter(farm => farm.id !== id));
+    // Delete all animal types and records for this farm
+    const farmTypeIds = animalTypes.filter(t => t.farmId === id).map(t => t.id);
+    setAnimalTypes(prev => prev.filter(type => type.farmId !== id));
+    setAnimalRecords(prev => prev.filter(record => !farmTypeIds.includes(record.animalTypeId)));
+    
+    if (selectedFarm?.id === id) {
+      const remainingFarms = farms.filter(f => f.id !== id);
+      setSelectedFarm(remainingFarms[0] || null);
+    }
+  };
+
+  const selectFarm = (id: string | null) => {
+    if (id === null) {
+      setSelectedFarm(null);
+      setSelectedAnimalType(null);
+    } else {
+      const farm = farms.find(f => f.id === id);
+      setSelectedFarm(farm || null);
+      setSelectedAnimalType(null);
+    }
+  };
+
+  const addAnimalType = (animalType: Omit<AnimalType, 'id' | 'createdAt' | 'farmId'>) => {
+    if (!selectedFarm) return;
+    
     const newType: AnimalType = {
       ...animalType,
       id: 'animal_' + Date.now(),
+      farmId: selectedFarm.id,
       createdAt: new Date(),
     };
     setAnimalTypes(prev => [...prev, newType]);
@@ -211,13 +309,19 @@ export function FarmProvider({ children }: { children: ReactNode }) {
     <FarmContext.Provider
       value={{
         user,
-        animalTypes,
+        farms,
+        selectedFarm,
+        animalTypes: farmAnimalTypes,
         selectedAnimalType,
         animalRecords,
         isAuthenticated: !!user,
         login,
         register,
         logout,
+        addFarm,
+        updateFarm,
+        deleteFarm,
+        selectFarm,
         addAnimalType,
         updateAnimalType,
         deleteAnimalType,
