@@ -188,9 +188,9 @@ export function MobileSidebar({ isOpen, onClose, onAddAnimal }: MobileSidebarPro
 
         {/* Footer */}
         <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-sidebar-border bg-sidebar space-y-1">
-          <Link to="/dashboard" onClick={onClose} className="nav-link">
+          <Link to="/dashboard/farm-settings" onClick={onClose} className="nav-link">
             <Settings className="w-5 h-5 flex-shrink-0" />
-            <span>Settings</span>
+            <span>Farm Settings</span>
           </Link>
           <button onClick={handleLogout} className="nav-link w-full text-destructive hover:bg-destructive/10">
             <LogOut className="w-5 h-5 flex-shrink-0" />
