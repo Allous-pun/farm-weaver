@@ -48,7 +48,7 @@ const MODULE_LABELS: Record<string, string> = {
 export function DashboardSidebar({ onAddAnimal, activeModule, onModuleSelect }: DashboardSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [expandedAnimal, setExpandedAnimal] = useState<string | null>(null);
-  const { user, animalTypes, selectedAnimalType, logout } = useFarm();
+  const { user, animalTypes, selectedAnimalType, selectedFarm, logout } = useFarm();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -91,7 +91,7 @@ export function DashboardSidebar({ onAddAnimal, activeModule, onModuleSelect }: 
         {!collapsed && (
           <div className="overflow-hidden">
             <div className="font-display font-bold text-lg">FarmFlow</div>
-            <div className="text-xs text-sidebar-foreground/60 truncate">{user?.farmName}</div>
+            <div className="text-xs text-sidebar-foreground/60 truncate">{selectedFarm?.name}</div>
           </div>
         )}
       </div>

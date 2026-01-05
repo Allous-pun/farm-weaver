@@ -7,13 +7,14 @@ import { EmptyState } from '@/components/dashboard/EmptyState';
 import { AnimalSetupWizard } from '@/components/dashboard/AnimalSetupWizard';
 import { MobileFAB } from '@/components/dashboard/MobileFAB';
 import { FarmOverview } from '@/components/dashboard/FarmOverview';
+import { FarmSwitcher } from '@/components/dashboard/FarmSwitcher';
 import { Bell, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function Dashboard() {
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const { user, isAuthenticated, animalTypes, selectAnimalType } = useFarm();
+  const { user, isAuthenticated, animalTypes, selectAnimalType, selectedFarm } = useFarm();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -64,10 +65,11 @@ export default function Dashboard() {
               <Menu className="w-6 h-6" />
             </button>
 
-            {/* Page Title */}
-            <h1 className="font-display font-semibold text-lg">Dashboard</h1>
-
-            {/* Right Side */}
+            {/* Page Title & Farm Switcher */}
+            <div className="flex items-center gap-3">
+              <h1 className="font-display font-semibold text-lg hidden sm:block">Dashboard</h1>
+              <FarmSwitcher />
+            </div>
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon" className="relative">
                 <Bell className="w-5 h-5" />
@@ -75,7 +77,7 @@ export default function Dashboard() {
               <div className="hidden md:flex items-center gap-3">
                 <div className="text-right">
                   <div className="text-sm font-medium">{user?.name}</div>
-                  <div className="text-xs text-muted-foreground">{user?.farmName}</div>
+                  <div className="text-xs text-muted-foreground">{selectedFarm?.name}</div>
                 </div>
                 <div className="w-10 h-10 rounded-full bg-gradient-hero flex items-center justify-center text-primary-foreground font-bold">
                   {user?.name?.[0]?.toUpperCase() || 'U'}

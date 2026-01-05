@@ -47,7 +47,7 @@ const MODULE_LABELS: Record<string, string> = {
 
 export function MobileSidebar({ isOpen, onClose, onAddAnimal }: MobileSidebarProps) {
   const [expandedAnimal, setExpandedAnimal] = useState<string | null>(null);
-  const { user, animalTypes, logout } = useFarm();
+  const { user, animalTypes, selectedFarm, logout } = useFarm();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -100,7 +100,7 @@ export function MobileSidebar({ isOpen, onClose, onAddAnimal }: MobileSidebarPro
           </div>
           <div className="overflow-hidden flex-1">
             <div className="font-display font-bold text-lg">FarmFlow</div>
-            <div className="text-xs text-sidebar-foreground/60 truncate">{user?.farmName}</div>
+            <div className="text-xs text-sidebar-foreground/60 truncate">{selectedFarm?.name}</div>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-sidebar-accent rounded-lg">
             <X className="w-5 h-5" />

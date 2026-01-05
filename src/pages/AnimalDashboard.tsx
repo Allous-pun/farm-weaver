@@ -13,6 +13,7 @@ import { AnimalRecordForm } from '@/components/dashboard/AnimalRecordForm';
 import { QuickAddHealthForm } from '@/components/dashboard/QuickAddHealthForm';
 import { QuickAddFeedingForm } from '@/components/dashboard/QuickAddFeedingForm';
 import { QuickAddBreedingForm } from '@/components/dashboard/QuickAddBreedingForm';
+import { FarmSwitcher } from '@/components/dashboard/FarmSwitcher';
 import { AnimalRecord } from '@/types/animal';
 import { Bell, Menu, Plus, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -24,7 +25,7 @@ export default function AnimalDashboard() {
   const [editingRecord, setEditingRecord] = useState<AnimalRecord | null>(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [activeQuickForm, setActiveQuickForm] = useState<string | null>(null);
-  const { user, isAuthenticated, animalTypes, animalRecords, getStats, selectAnimalType } = useFarm();
+  const { user, isAuthenticated, animalTypes, animalRecords, getStats, selectAnimalType, selectedFarm } = useFarm();
   const navigate = useNavigate();
 
   // Find the animal type from URL params
@@ -120,10 +121,11 @@ export default function AnimalDashboard() {
               <Menu className="w-6 h-6" />
             </button>
 
-            {/* Page Title */}
+            {/* Page Title & Farm Switcher */}
             <div className="flex items-center gap-3">
               <span className="text-2xl">{animalType.icon}</span>
-              <h1 className="font-display font-semibold">{animalType.name}</h1>
+              <h1 className="font-display font-semibold hidden sm:block">{animalType.name}</h1>
+              <FarmSwitcher />
             </div>
 
             {/* Right Side */}
@@ -146,7 +148,7 @@ export default function AnimalDashboard() {
               <div className="hidden md:flex items-center gap-3">
                 <div className="text-right">
                   <div className="text-sm font-medium">{user?.name}</div>
-                  <div className="text-xs text-muted-foreground">{user?.farmName}</div>
+                  <div className="text-xs text-muted-foreground">{selectedFarm?.name}</div>
                 </div>
                 <div className="w-10 h-10 rounded-full bg-gradient-hero flex items-center justify-center text-primary-foreground font-bold">
                   {user?.name?.[0]?.toUpperCase() || 'U'}
