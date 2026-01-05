@@ -177,9 +177,9 @@ export function DashboardSidebar({ onAddAnimal, activeModule, onModuleSelect }: 
 
       {/* Footer */}
       <div className="p-3 border-t border-sidebar-border space-y-1">
-        <Link to="/dashboard" className="nav-link">
+        <Link to="/dashboard/farm-settings" className="nav-link">
           <Settings className="w-5 h-5 flex-shrink-0" />
-          {!collapsed && <span>Settings</span>}
+          {!collapsed && <span>Farm Settings</span>}
         </Link>
         <button onClick={logout} className="nav-link w-full text-destructive hover:bg-destructive/10">
           <LogOut className="w-5 h-5 flex-shrink-0" />

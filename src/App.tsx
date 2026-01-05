@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import AnimalDashboard from "./pages/AnimalDashboard";
+import FarmSettings from "./pages/FarmSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard/farm-settings" element={<FarmSettings />} />
             <Route path="/dashboard/animal/:animalId" element={<AnimalDashboard />} />
             <Route path="/dashboard/animal/:animalId/:module" element={<AnimalDashboard />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
