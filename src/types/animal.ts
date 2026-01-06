@@ -54,6 +54,89 @@ export interface DashboardStats {
   alertsCount: number;
 }
 
+// Module Record Types
+export interface FeedRecord {
+  id: string;
+  animalTypeId: string;
+  feedType: string;
+  quantity: number;
+  unit: string;
+  date: Date;
+  time?: string;
+  groupOrAnimal?: string;
+  notes?: string;
+  createdAt: Date;
+}
+
+export interface HealthRecord {
+  id: string;
+  animalTypeId: string;
+  animalName?: string;
+  recordType: 'checkup' | 'vaccination' | 'treatment' | 'illness' | 'injury';
+  date: Date;
+  diagnosis?: string;
+  treatment?: string;
+  veterinarian?: string;
+  notes?: string;
+  createdAt: Date;
+}
+
+export interface BreedingRecord {
+  id: string;
+  animalTypeId: string;
+  eventType: 'mating' | 'pregnancy' | 'birth' | 'weaning';
+  femaleName: string;
+  maleName?: string;
+  date: Date;
+  expectedDueDate?: Date;
+  offspringCount?: number;
+  notes?: string;
+  createdAt: Date;
+}
+
+export interface GeneticsRecord {
+  id: string;
+  animalTypeId: string;
+  animalName: string;
+  lineage: string;
+  sire?: string;
+  dam?: string;
+  traits?: string;
+  breedingValue?: string;
+  notes?: string;
+  createdAt: Date;
+}
+
+export interface InventoryRecord {
+  id: string;
+  animalTypeId: string;
+  transactionType: 'purchase' | 'sale' | 'birth' | 'death' | 'transfer';
+  animalName?: string;
+  quantity: number;
+  unitPrice?: number;
+  totalValue?: number;
+  buyer?: string;
+  seller?: string;
+  date: Date;
+  notes?: string;
+  createdAt: Date;
+}
+
+export interface ProductionRecord {
+  id: string;
+  animalTypeId: string;
+  productType: string;
+  quantity: number;
+  unit: string;
+  quality?: string;
+  date: Date;
+  groupOrAnimal?: string;
+  notes?: string;
+  createdAt: Date;
+}
+
+export type ModuleRecord = FeedRecord | HealthRecord | BreedingRecord | GeneticsRecord | InventoryRecord | ProductionRecord;
+
 export const CATEGORY_OPTIONS: { value: AnimalCategory; label: string; icon: string }[] = [
   { value: 'livestock', label: 'Livestock', icon: '🐄' },
   { value: 'poultry', label: 'Poultry', icon: '🐔' },

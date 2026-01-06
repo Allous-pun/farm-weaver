@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
 import { Stethoscope, Calendar, Syringe, Pill, AlertCircle } from 'lucide-react';
-import { AnimalType } from '@/types/animal';
+import { AnimalType, HealthRecord } from '@/types/animal';
+import { useFarm } from '@/context/FarmContext';
 
 const healthRecordSchema = z.object({
   animalName: z.string().trim().min(1, "Animal name is required").max(100),
@@ -24,6 +25,7 @@ interface QuickAddHealthFormProps {
   isOpen: boolean;
   onClose: () => void;
   animalType: AnimalType;
+  editingRecord?: HealthRecord | null;
 }
 
 const RECORD_TYPES = [
@@ -34,10 +36,11 @@ const RECORD_TYPES = [
   { value: 'illness', label: 'Illness', icon: AlertCircle },
 ];
 
-export function QuickAddHealthForm({ isOpen, onClose, animalType }: QuickAddHealthFormProps) {
+export function QuickAddHealthForm({ isOpen, onClose, animalType, editingRecord }: QuickAddHealthFormProps) {
+  const { addHealthRecord, updateHealthRecord } = useFarm();
   const [formData, setFormData] = useState({
     animalName: '',
-    recordType: 'checkup' as const,
+    recordType: 'checkup' as 'checkup' | 'vaccination' | 'treatment' | 'injury' | 'illness',
     date: new Date().toISOString().split('T')[0],
     diagnosis: '',
     treatment: '',
@@ -45,6 +48,30 @@ export function QuickAddHealthForm({ isOpen, onClose, animalType }: QuickAddHeal
     notes: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (editingRecord) {
+      setFormData({
+        animalName: editingRecord.animalName || '',
+        recordType: editingRecord.recordType,
+        date: new Date(editingRecord.date).toISOString().split('T')[0],
+        diagnosis: editingRecord.diagnosis || '',
+        treatment: editingRecord.treatment || '',
+        veterinarian: editingRecord.veterinarian || '',
+        notes: editingRecord.notes || '',
+      });
+    } else {
+      setFormData({
+        animalName: '',
+        recordType: 'checkup',
+        date: new Date().toISOString().split('T')[0],
+        diagnosis: '',
+        treatment: '',
+        veterinarian: '',
+        notes: '',
+      });
+    }
+  }, [editingRecord, isOpen]);
 
   const handleSubmit = () => {
     const result = healthRecordSchema.safeParse(formData);
@@ -60,22 +87,31 @@ export function QuickAddHealthForm({ isOpen, onClose, animalType }: QuickAddHeal
       return;
     }
 
-    // TODO: Save to database when backend is connected
-    toast({
-      title: "Health record added",
-      description: `Recorded ${formData.recordType} for ${formData.animalName}`,
-    });
+    const recordData = {
+      animalTypeId: animalType.id,
+      animalName: formData.animalName,
+      recordType: formData.recordType,
+      date: new Date(formData.date),
+      diagnosis: formData.diagnosis || undefined,
+      treatment: formData.treatment || undefined,
+      veterinarian: formData.veterinarian || undefined,
+      notes: formData.notes || undefined,
+    };
 
-    // Reset form
-    setFormData({
-      animalName: '',
-      recordType: 'checkup',
-      date: new Date().toISOString().split('T')[0],
-      diagnosis: '',
-      treatment: '',
-      veterinarian: '',
-      notes: '',
-    });
+    if (editingRecord) {
+      updateHealthRecord(editingRecord.id, recordData);
+      toast({
+        title: "Health record updated",
+        description: `Updated ${formData.recordType} record for ${formData.animalName}`,
+      });
+    } else {
+      addHealthRecord(recordData);
+      toast({
+        title: "Health record added",
+        description: `Recorded ${formData.recordType} for ${formData.animalName}`,
+      });
+    }
+
     setErrors({});
     onClose();
   };
@@ -85,18 +121,17 @@ export function QuickAddHealthForm({ isOpen, onClose, animalType }: QuickAddHeal
       <DrawerContent className="max-h-[90vh]">
         <DrawerHeader className="border-b border-border pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
-              <Stethoscope className="w-5 h-5 text-emerald-600" />
+            <div className="w-10 h-10 rounded-xl bg-rose-500/20 flex items-center justify-center">
+              <Stethoscope className="w-5 h-5 text-rose-600" />
             </div>
             <div>
-              <DrawerTitle>Add Health Record</DrawerTitle>
+              <DrawerTitle>{editingRecord ? 'Edit' : 'Add'} Health Record</DrawerTitle>
               <p className="text-sm text-muted-foreground">{animalType.name}</p>
             </div>
           </div>
         </DrawerHeader>
 
         <div className="p-4 space-y-4 overflow-y-auto max-h-[60vh]">
-          {/* Animal Name */}
           <div className="space-y-2">
             <Label htmlFor="animalName">Animal Name/ID *</Label>
             <Input
@@ -109,7 +144,6 @@ export function QuickAddHealthForm({ isOpen, onClose, animalType }: QuickAddHeal
             {errors.animalName && <p className="text-xs text-destructive">{errors.animalName}</p>}
           </div>
 
-          {/* Record Type */}
           <div className="space-y-2">
             <Label>Record Type *</Label>
             <Select
@@ -132,7 +166,6 @@ export function QuickAddHealthForm({ isOpen, onClose, animalType }: QuickAddHeal
             </Select>
           </div>
 
-          {/* Date */}
           <div className="space-y-2">
             <Label htmlFor="date">Date *</Label>
             <div className="relative">
@@ -147,7 +180,6 @@ export function QuickAddHealthForm({ isOpen, onClose, animalType }: QuickAddHeal
             </div>
           </div>
 
-          {/* Diagnosis */}
           <div className="space-y-2">
             <Label htmlFor="diagnosis">Diagnosis</Label>
             <Input
@@ -158,7 +190,6 @@ export function QuickAddHealthForm({ isOpen, onClose, animalType }: QuickAddHeal
             />
           </div>
 
-          {/* Treatment */}
           <div className="space-y-2">
             <Label htmlFor="treatment">Treatment</Label>
             <Textarea
@@ -170,7 +201,6 @@ export function QuickAddHealthForm({ isOpen, onClose, animalType }: QuickAddHeal
             />
           </div>
 
-          {/* Veterinarian */}
           <div className="space-y-2">
             <Label htmlFor="veterinarian">Veterinarian</Label>
             <Input
@@ -181,7 +211,6 @@ export function QuickAddHealthForm({ isOpen, onClose, animalType }: QuickAddHeal
             />
           </div>
 
-          {/* Notes */}
           <div className="space-y-2">
             <Label htmlFor="notes">Additional Notes</Label>
             <Textarea
@@ -199,8 +228,8 @@ export function QuickAddHealthForm({ isOpen, onClose, animalType }: QuickAddHeal
             <Button variant="outline" onClick={onClose} className="flex-1">
               Cancel
             </Button>
-            <Button onClick={handleSubmit} className="flex-1 bg-emerald-600 hover:bg-emerald-700">
-              Save Record
+            <Button onClick={handleSubmit} className="flex-1 bg-rose-600 hover:bg-rose-700">
+              {editingRecord ? 'Update' : 'Save'} Record
             </Button>
           </div>
         </DrawerFooter>

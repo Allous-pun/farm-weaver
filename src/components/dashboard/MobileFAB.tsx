@@ -1,11 +1,12 @@
-import { Plus, ClipboardList, Leaf, Wheat, Stethoscope, Baby, X } from 'lucide-react';
+import { Plus, ClipboardList, Wheat, Stethoscope, Baby, Dna, Package, BarChart3, X } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import type { LucideIcon } from 'lucide-react';
 
 interface QuickAction {
   id: string;
   label: string;
-  icon: React.ElementType;
+  icon: LucideIcon;
   color: string;
 }
 
@@ -18,10 +19,13 @@ interface MobileFABProps {
 }
 
 const QUICK_ACTIONS: Record<string, QuickAction> = {
-  records: { id: 'records', label: 'Add Record', icon: ClipboardList, color: 'bg-blue-500' },
+  records: { id: 'records', label: 'Add Animal', icon: ClipboardList, color: 'bg-primary' },
   feed: { id: 'feed', label: 'Log Feeding', icon: Wheat, color: 'bg-amber-500' },
-  health: { id: 'health', label: 'Health Record', icon: Stethoscope, color: 'bg-emerald-500' },
+  health: { id: 'health', label: 'Health Record', icon: Stethoscope, color: 'bg-rose-500' },
   reproduction: { id: 'reproduction', label: 'Breeding Log', icon: Baby, color: 'bg-pink-500' },
+  genetics: { id: 'genetics', label: 'Genetics Record', icon: Dna, color: 'bg-violet-500' },
+  inventory: { id: 'inventory', label: 'Inventory/Sales', icon: Package, color: 'bg-blue-500' },
+  production: { id: 'production', label: 'Production Log', icon: BarChart3, color: 'bg-emerald-500' },
 };
 
 export function MobileFAB({ onAddAnimal, onAddRecord, onQuickAction, enabledFeatures = [], animalId }: MobileFABProps) {
@@ -29,7 +33,7 @@ export function MobileFAB({ onAddAnimal, onAddRecord, onQuickAction, enabledFeat
   
   // Build available actions based on enabled features
   const availableActions: QuickAction[] = [
-    QUICK_ACTIONS.records, // Always show add record
+    QUICK_ACTIONS.records, // Always show add animal record
     ...enabledFeatures
       .filter(f => QUICK_ACTIONS[f])
       .map(f => QUICK_ACTIONS[f])
@@ -82,7 +86,7 @@ export function MobileFAB({ onAddAnimal, onAddRecord, onQuickAction, enabledFeat
             >
               <span className="text-sm font-medium whitespace-nowrap">New Animal Type</span>
               <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <Leaf className="w-5 h-5 text-primary" />
+                <Plus className="w-5 h-5 text-primary" />
               </div>
             </button>
 
