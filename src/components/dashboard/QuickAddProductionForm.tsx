@@ -7,48 +7,49 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
-import { Wheat, Calendar, Clock } from 'lucide-react';
-import { AnimalType, FeedRecord } from '@/types/animal';
+import { BarChart3, Calendar } from 'lucide-react';
+import { AnimalType, ProductionRecord } from '@/types/animal';
 import { useFarm } from '@/context/FarmContext';
 
-const feedingLogSchema = z.object({
-  feedType: z.string().trim().min(1, "Feed type is required").max(100),
+const productionRecordSchema = z.object({
+  productType: z.string().trim().min(1, "Product type is required").max(100),
   quantity: z.string().min(1, "Quantity is required"),
   unit: z.string().min(1, "Unit is required"),
+  quality: z.string().trim().max(50).optional(),
   date: z.string().min(1, "Date is required"),
-  time: z.string().optional(),
   groupOrAnimal: z.string().trim().max(100).optional(),
-  notes: z.string().trim().max(500).optional(),
+  notes: z.string().trim().max(1000).optional(),
 });
 
-interface QuickAddFeedingFormProps {
+interface QuickAddProductionFormProps {
   isOpen: boolean;
   onClose: () => void;
   animalType: AnimalType;
-  editingRecord?: FeedRecord | null;
+  editingRecord?: ProductionRecord | null;
 }
 
-const FEED_UNITS = ['kg', 'lbs', 'liters', 'gallons', 'scoops', 'bales'];
-
-const COMMON_FEEDS = [
-  'Hay',
-  'Grain',
-  'Pellets',
-  'Silage',
-  'Grass',
-  'Mixed Feed',
-  'Supplements',
+const PRODUCT_TYPES = [
+  'Milk',
+  'Eggs',
+  'Wool',
+  'Meat',
+  'Honey',
+  'Manure',
   'Other',
 ];
 
-export function QuickAddFeedingForm({ isOpen, onClose, animalType, editingRecord }: QuickAddFeedingFormProps) {
-  const { addFeedRecord, updateFeedRecord } = useFarm();
+const QUALITY_GRADES = ['Grade A', 'Grade B', 'Grade C', 'Premium', 'Standard', 'Organic'];
+
+const UNITS = ['liters', 'kg', 'lbs', 'pieces', 'gallons', 'units', 'tons'];
+
+export function QuickAddProductionForm({ isOpen, onClose, animalType, editingRecord }: QuickAddProductionFormProps) {
+  const { addProductionRecord, updateProductionRecord } = useFarm();
   const [formData, setFormData] = useState({
-    feedType: '',
+    productType: '',
     quantity: '',
     unit: 'kg',
+    quality: '',
     date: new Date().toISOString().split('T')[0],
-    time: new Date().toTimeString().slice(0, 5),
     groupOrAnimal: '',
     notes: '',
   });
@@ -57,21 +58,21 @@ export function QuickAddFeedingForm({ isOpen, onClose, animalType, editingRecord
   useEffect(() => {
     if (editingRecord) {
       setFormData({
-        feedType: editingRecord.feedType,
+        productType: editingRecord.productType,
         quantity: String(editingRecord.quantity),
         unit: editingRecord.unit,
+        quality: editingRecord.quality || '',
         date: new Date(editingRecord.date).toISOString().split('T')[0],
-        time: editingRecord.time || '',
         groupOrAnimal: editingRecord.groupOrAnimal || '',
         notes: editingRecord.notes || '',
       });
     } else {
       setFormData({
-        feedType: '',
+        productType: '',
         quantity: '',
         unit: 'kg',
+        quality: '',
         date: new Date().toISOString().split('T')[0],
-        time: new Date().toTimeString().slice(0, 5),
         groupOrAnimal: '',
         notes: '',
       });
@@ -79,7 +80,7 @@ export function QuickAddFeedingForm({ isOpen, onClose, animalType, editingRecord
   }, [editingRecord, isOpen]);
 
   const handleSubmit = () => {
-    const result = feedingLogSchema.safeParse(formData);
+    const result = productionRecordSchema.safeParse(formData);
     
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
@@ -94,26 +95,26 @@ export function QuickAddFeedingForm({ isOpen, onClose, animalType, editingRecord
 
     const recordData = {
       animalTypeId: animalType.id,
-      feedType: formData.feedType,
+      productType: formData.productType,
       quantity: parseFloat(formData.quantity),
       unit: formData.unit,
+      quality: formData.quality || undefined,
       date: new Date(formData.date),
-      time: formData.time || undefined,
       groupOrAnimal: formData.groupOrAnimal || undefined,
       notes: formData.notes || undefined,
     };
 
     if (editingRecord) {
-      updateFeedRecord(editingRecord.id, recordData);
+      updateProductionRecord(editingRecord.id, recordData);
       toast({
-        title: "Feeding record updated",
-        description: `Updated ${formData.quantity} ${formData.unit} of ${formData.feedType}`,
+        title: "Production record updated",
+        description: `Updated ${formData.quantity} ${formData.unit} of ${formData.productType}`,
       });
     } else {
-      addFeedRecord(recordData);
+      addProductionRecord(recordData);
       toast({
-        title: "Feeding logged",
-        description: `${formData.quantity} ${formData.unit} of ${formData.feedType}`,
+        title: "Production logged",
+        description: `${formData.quantity} ${formData.unit} of ${formData.productType}`,
       });
     }
 
@@ -126,11 +127,11 @@ export function QuickAddFeedingForm({ isOpen, onClose, animalType, editingRecord
       <DrawerContent className="max-h-[90vh]">
         <DrawerHeader className="border-b border-border pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
-              <Wheat className="w-5 h-5 text-amber-600" />
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+              <BarChart3 className="w-5 h-5 text-emerald-600" />
             </div>
             <div>
-              <DrawerTitle>{editingRecord ? 'Edit' : 'Log'} Feeding</DrawerTitle>
+              <DrawerTitle>{editingRecord ? 'Edit' : 'Log'} Production</DrawerTitle>
               <p className="text-sm text-muted-foreground">{animalType.name}</p>
             </div>
           </div>
@@ -138,21 +139,21 @@ export function QuickAddFeedingForm({ isOpen, onClose, animalType, editingRecord
 
         <div className="p-4 space-y-4 overflow-y-auto max-h-[60vh]">
           <div className="space-y-2">
-            <Label>Feed Type *</Label>
+            <Label>Product Type *</Label>
             <Select
-              value={formData.feedType}
-              onValueChange={(value) => setFormData({ ...formData, feedType: value })}
+              value={formData.productType}
+              onValueChange={(value) => setFormData({ ...formData, productType: value })}
             >
-              <SelectTrigger className={errors.feedType ? 'border-destructive' : ''}>
-                <SelectValue placeholder="Select feed type" />
+              <SelectTrigger className={errors.productType ? 'border-destructive' : ''}>
+                <SelectValue placeholder="Select product type" />
               </SelectTrigger>
               <SelectContent>
-                {COMMON_FEEDS.map((feed) => (
-                  <SelectItem key={feed} value={feed}>{feed}</SelectItem>
+                {PRODUCT_TYPES.map((type) => (
+                  <SelectItem key={type} value={type}>{type}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            {errors.feedType && <p className="text-xs text-destructive">{errors.feedType}</p>}
+            {errors.productType && <p className="text-xs text-destructive">{errors.productType}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -180,7 +181,7 @@ export function QuickAddFeedingForm({ isOpen, onClose, animalType, editingRecord
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {FEED_UNITS.map((unit) => (
+                  {UNITS.map((unit) => (
                     <SelectItem key={unit} value={unit}>{unit}</SelectItem>
                   ))}
                 </SelectContent>
@@ -188,40 +189,42 @@ export function QuickAddFeedingForm({ isOpen, onClose, animalType, editingRecord
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label htmlFor="date">Date *</Label>
-              <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  id="date"
-                  type="date"
-                  value={formData.date}
-                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="time">Time</Label>
-              <div className="relative">
-                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  id="time"
-                  type="time"
-                  value={formData.time}
-                  onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                  className="pl-10"
-                />
-              </div>
+          <div className="space-y-2">
+            <Label>Quality Grade</Label>
+            <Select
+              value={formData.quality}
+              onValueChange={(value) => setFormData({ ...formData, quality: value })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select quality grade" />
+              </SelectTrigger>
+              <SelectContent>
+                {QUALITY_GRADES.map((grade) => (
+                  <SelectItem key={grade} value={grade}>{grade}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="date">Date *</Label>
+            <div className="relative">
+              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                id="date"
+                type="date"
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                className="pl-10"
+              />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="groupOrAnimal">Group / Animal (Optional)</Label>
+            <Label htmlFor="groupOrAnimal">Source (Group/Animal)</Label>
             <Input
               id="groupOrAnimal"
-              placeholder="e.g., Barn A, All cattle, Bessie"
+              placeholder="e.g., Herd A, Bessie, All cows"
               value={formData.groupOrAnimal}
               onChange={(e) => setFormData({ ...formData, groupOrAnimal: e.target.value })}
             />
@@ -231,7 +234,7 @@ export function QuickAddFeedingForm({ isOpen, onClose, animalType, editingRecord
             <Label htmlFor="notes">Notes</Label>
             <Textarea
               id="notes"
-              placeholder="Any observations..."
+              placeholder="Any additional observations..."
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               rows={2}
@@ -244,8 +247,8 @@ export function QuickAddFeedingForm({ isOpen, onClose, animalType, editingRecord
             <Button variant="outline" onClick={onClose} className="flex-1">
               Cancel
             </Button>
-            <Button onClick={handleSubmit} className="flex-1 bg-amber-600 hover:bg-amber-700">
-              {editingRecord ? 'Update' : 'Log'} Feeding
+            <Button onClick={handleSubmit} className="flex-1 bg-emerald-600 hover:bg-emerald-700">
+              {editingRecord ? 'Update' : 'Log'} Production
             </Button>
           </div>
         </DrawerFooter>

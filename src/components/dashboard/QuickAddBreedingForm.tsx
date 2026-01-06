@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
@@ -8,10 +8,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
 import { Baby, Calendar, Heart } from 'lucide-react';
-import { AnimalType } from '@/types/animal';
+import { AnimalType, BreedingRecord } from '@/types/animal';
+import { useFarm } from '@/context/FarmContext';
 
 const breedingLogSchema = z.object({
-  eventType: z.enum(['mating', 'pregnancy_check', 'birth', 'weaning']),
+  eventType: z.enum(['mating', 'pregnancy', 'birth', 'weaning']),
   femaleName: z.string().trim().min(1, "Female name is required").max(100),
   maleName: z.string().trim().max(100).optional(),
   date: z.string().min(1, "Date is required"),
@@ -24,18 +25,20 @@ interface QuickAddBreedingFormProps {
   isOpen: boolean;
   onClose: () => void;
   animalType: AnimalType;
+  editingRecord?: BreedingRecord | null;
 }
 
 const EVENT_TYPES = [
   { value: 'mating', label: 'Mating/Breeding' },
-  { value: 'pregnancy_check', label: 'Pregnancy Check' },
+  { value: 'pregnancy', label: 'Pregnancy Confirmed' },
   { value: 'birth', label: 'Birth/Delivery' },
   { value: 'weaning', label: 'Weaning' },
 ];
 
-export function QuickAddBreedingForm({ isOpen, onClose, animalType }: QuickAddBreedingFormProps) {
+export function QuickAddBreedingForm({ isOpen, onClose, animalType, editingRecord }: QuickAddBreedingFormProps) {
+  const { addBreedingRecord, updateBreedingRecord } = useFarm();
   const [formData, setFormData] = useState({
-    eventType: 'mating' as 'mating' | 'pregnancy_check' | 'birth' | 'weaning',
+    eventType: 'mating' as 'mating' | 'pregnancy' | 'birth' | 'weaning',
     femaleName: '',
     maleName: '',
     date: new Date().toISOString().split('T')[0],
@@ -46,6 +49,30 @@ export function QuickAddBreedingForm({ isOpen, onClose, animalType }: QuickAddBr
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const terminology = animalType.terminology;
+
+  useEffect(() => {
+    if (editingRecord) {
+      setFormData({
+        eventType: editingRecord.eventType,
+        femaleName: editingRecord.femaleName,
+        maleName: editingRecord.maleName || '',
+        date: new Date(editingRecord.date).toISOString().split('T')[0],
+        expectedDueDate: editingRecord.expectedDueDate ? new Date(editingRecord.expectedDueDate).toISOString().split('T')[0] : '',
+        offspringCount: editingRecord.offspringCount ? String(editingRecord.offspringCount) : '',
+        notes: editingRecord.notes || '',
+      });
+    } else {
+      setFormData({
+        eventType: 'mating',
+        femaleName: '',
+        maleName: '',
+        date: new Date().toISOString().split('T')[0],
+        expectedDueDate: '',
+        offspringCount: '',
+        notes: '',
+      });
+    }
+  }, [editingRecord, isOpen]);
 
   const handleSubmit = () => {
     const result = breedingLogSchema.safeParse(formData);
@@ -61,29 +88,39 @@ export function QuickAddBreedingForm({ isOpen, onClose, animalType }: QuickAddBr
       return;
     }
 
-    // TODO: Save to database when backend is connected
-    const eventLabel = EVENT_TYPES.find(e => e.value === formData.eventType)?.label;
-    toast({
-      title: "Breeding event logged",
-      description: `${eventLabel} recorded for ${formData.femaleName}`,
-    });
+    const recordData = {
+      animalTypeId: animalType.id,
+      eventType: formData.eventType,
+      femaleName: formData.femaleName,
+      maleName: formData.maleName || undefined,
+      date: new Date(formData.date),
+      expectedDueDate: formData.expectedDueDate ? new Date(formData.expectedDueDate) : undefined,
+      offspringCount: formData.offspringCount ? parseInt(formData.offspringCount) : undefined,
+      notes: formData.notes || undefined,
+    };
 
-    // Reset form
-    setFormData({
-      eventType: 'mating',
-      femaleName: '',
-      maleName: '',
-      date: new Date().toISOString().split('T')[0],
-      expectedDueDate: '',
-      offspringCount: '',
-      notes: '',
-    });
+    const eventLabel = EVENT_TYPES.find(e => e.value === formData.eventType)?.label;
+
+    if (editingRecord) {
+      updateBreedingRecord(editingRecord.id, recordData);
+      toast({
+        title: "Breeding record updated",
+        description: `Updated ${eventLabel} for ${formData.femaleName}`,
+      });
+    } else {
+      addBreedingRecord(recordData);
+      toast({
+        title: "Breeding event logged",
+        description: `${eventLabel} recorded for ${formData.femaleName}`,
+      });
+    }
+
     setErrors({});
     onClose();
   };
 
   const showMaleField = formData.eventType === 'mating';
-  const showDueDateField = formData.eventType === 'mating' || formData.eventType === 'pregnancy_check';
+  const showDueDateField = formData.eventType === 'mating' || formData.eventType === 'pregnancy';
   const showOffspringField = formData.eventType === 'birth';
 
   return (
@@ -95,14 +132,13 @@ export function QuickAddBreedingForm({ isOpen, onClose, animalType }: QuickAddBr
               <Baby className="w-5 h-5 text-pink-600" />
             </div>
             <div>
-              <DrawerTitle>Log Breeding Event</DrawerTitle>
+              <DrawerTitle>{editingRecord ? 'Edit' : 'Log'} Breeding Event</DrawerTitle>
               <p className="text-sm text-muted-foreground">{animalType.name}</p>
             </div>
           </div>
         </DrawerHeader>
 
         <div className="p-4 space-y-4 overflow-y-auto max-h-[60vh]">
-          {/* Event Type */}
           <div className="space-y-2">
             <Label>Event Type *</Label>
             <Select
@@ -120,7 +156,6 @@ export function QuickAddBreedingForm({ isOpen, onClose, animalType }: QuickAddBr
             </Select>
           </div>
 
-          {/* Female Name */}
           <div className="space-y-2">
             <Label htmlFor="femaleName">{terminology.femaleName} Name/ID *</Label>
             <Input
@@ -133,7 +168,6 @@ export function QuickAddBreedingForm({ isOpen, onClose, animalType }: QuickAddBr
             {errors.femaleName && <p className="text-xs text-destructive">{errors.femaleName}</p>}
           </div>
 
-          {/* Male Name (conditional) */}
           {showMaleField && (
             <div className="space-y-2">
               <Label htmlFor="maleName">{terminology.maleName} Name/ID</Label>
@@ -150,7 +184,6 @@ export function QuickAddBreedingForm({ isOpen, onClose, animalType }: QuickAddBr
             </div>
           )}
 
-          {/* Date */}
           <div className="space-y-2">
             <Label htmlFor="date">Date *</Label>
             <div className="relative">
@@ -165,7 +198,6 @@ export function QuickAddBreedingForm({ isOpen, onClose, animalType }: QuickAddBr
             </div>
           </div>
 
-          {/* Expected Due Date (conditional) */}
           {showDueDateField && (
             <div className="space-y-2">
               <Label htmlFor="expectedDueDate">Expected {terminology.birthEventName} Date</Label>
@@ -182,7 +214,6 @@ export function QuickAddBreedingForm({ isOpen, onClose, animalType }: QuickAddBr
             </div>
           )}
 
-          {/* Offspring Count (conditional) */}
           {showOffspringField && (
             <div className="space-y-2">
               <Label htmlFor="offspringCount">Number of {terminology.youngName}s</Label>
@@ -197,7 +228,6 @@ export function QuickAddBreedingForm({ isOpen, onClose, animalType }: QuickAddBr
             </div>
           )}
 
-          {/* Notes */}
           <div className="space-y-2">
             <Label htmlFor="notes">Notes</Label>
             <Textarea
@@ -216,7 +246,7 @@ export function QuickAddBreedingForm({ isOpen, onClose, animalType }: QuickAddBr
               Cancel
             </Button>
             <Button onClick={handleSubmit} className="flex-1 bg-pink-600 hover:bg-pink-700">
-              Log Event
+              {editingRecord ? 'Update' : 'Log'} Event
             </Button>
           </div>
         </DrawerFooter>
