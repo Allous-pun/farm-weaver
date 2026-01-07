@@ -10,6 +10,7 @@ import { ModuleGrid } from '@/components/dashboard/ModuleGrid';
 import { ModuleRecordsList } from '@/components/dashboard/ModuleRecordsList';
 import { AnimalRecordsList } from '@/components/dashboard/AnimalRecordsList';
 import { AnalyticsCharts } from '@/components/dashboard/AnalyticsCharts';
+import { ComparisonAnalytics } from '@/components/dashboard/ComparisonAnalytics';
 import { AnimalRecordForm } from '@/components/dashboard/AnimalRecordForm';
 import { QuickAddHealthForm } from '@/components/dashboard/QuickAddHealthForm';
 import { QuickAddFeedingForm } from '@/components/dashboard/QuickAddFeedingForm';
@@ -295,6 +296,9 @@ export default function AnimalDashboard() {
 
               {/* Analytics Charts */}
               <AnalyticsCharts animalTypeId={animalType.id} />
+
+              {/* Comparison Analytics */}
+              <ComparisonAnalytics animalTypeId={animalType.id} />
             </div>
           )}
         </div>
