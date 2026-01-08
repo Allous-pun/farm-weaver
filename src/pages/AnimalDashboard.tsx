@@ -11,6 +11,7 @@ import { ModuleRecordsList } from '@/components/dashboard/ModuleRecordsList';
 import { AnimalRecordsList } from '@/components/dashboard/AnimalRecordsList';
 import { AnalyticsCharts } from '@/components/dashboard/AnalyticsCharts';
 import { ComparisonAnalytics } from '@/components/dashboard/ComparisonAnalytics';
+import { SummaryReportGenerator } from '@/components/dashboard/SummaryReportGenerator';
 import { AnimalRecordForm } from '@/components/dashboard/AnimalRecordForm';
 import { QuickAddHealthForm } from '@/components/dashboard/QuickAddHealthForm';
 import { QuickAddFeedingForm } from '@/components/dashboard/QuickAddFeedingForm';
@@ -299,6 +300,9 @@ export default function AnimalDashboard() {
 
               {/* Comparison Analytics */}
               <ComparisonAnalytics animalTypeId={animalType.id} />
+
+              {/* Summary Report Generator */}
+              <SummaryReportGenerator animalTypeId={animalType.id} />
             </div>
           )}
         </div>
