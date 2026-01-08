@@ -15,7 +15,9 @@ import {
   Baby,
   Dna,
   Package,
-  BarChart3
+  BarChart3,
+  User,
+  Cog
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
@@ -177,6 +179,14 @@ export function DashboardSidebar({ onAddAnimal, activeModule, onModuleSelect }: 
 
       {/* Footer */}
       <div className="p-3 border-t border-sidebar-border space-y-1">
+        <Link to="/dashboard/profile" className="nav-link">
+          <User className="w-5 h-5 flex-shrink-0" />
+          {!collapsed && <span>Profile</span>}
+        </Link>
+        <Link to="/dashboard/settings" className="nav-link">
+          <Cog className="w-5 h-5 flex-shrink-0" />
+          {!collapsed && <span>Settings</span>}
+        </Link>
         <Link to="/dashboard/farm-settings" className="nav-link">
           <Settings className="w-5 h-5 flex-shrink-0" />
           {!collapsed && <span>Farm Settings</span>}
