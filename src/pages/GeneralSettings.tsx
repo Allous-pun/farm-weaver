@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFarm } from '@/context/FarmContext';
 import { useNotifications } from '@/context/NotificationContext';
+import { useTheme } from '@/context/ThemeContext';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
 import { MobileSidebar } from '@/components/dashboard/MobileSidebar';
 import { AnimalSetupWizard } from '@/components/dashboard/AnimalSetupWizard';
@@ -15,20 +16,14 @@ import { NotificationsPanel } from '@/components/dashboard/NotificationsPanel';
 import { Menu, Settings, Bell, Moon, Sun, Monitor } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-type Theme = 'light' | 'dark' | 'system';
-
 export default function GeneralSettings() {
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [showAnimalWizard, setShowAnimalWizard] = useState(false);
   const { user } = useFarm();
   const { settings, updateSettings } = useNotifications();
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  const [theme, setTheme] = useState<Theme>(() => {
-    const stored = localStorage.getItem('farmflow_theme');
-    return (stored as Theme) || 'system';
-  });
 
   const [language, setLanguage] = useState(() => {
     return localStorage.getItem('farmflow_language') || 'en';
@@ -39,24 +34,6 @@ export default function GeneralSettings() {
       navigate('/login');
     }
   }, [user, navigate]);
-
-  useEffect(() => {
-    localStorage.setItem('farmflow_theme', theme);
-    const root = document.documentElement;
-    
-    if (theme === 'dark') {
-      root.classList.add('dark');
-    } else if (theme === 'light') {
-      root.classList.remove('dark');
-    } else {
-      // System preference
-      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        root.classList.add('dark');
-      } else {
-        root.classList.remove('dark');
-      }
-    }
-  }, [theme]);
 
   const handleSaveNotificationSettings = () => {
     toast({
