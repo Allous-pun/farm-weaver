@@ -21,6 +21,7 @@ import { QuickAddGeneticsForm } from '@/components/dashboard/QuickAddGeneticsFor
 import { QuickAddInventoryForm } from '@/components/dashboard/QuickAddInventoryForm';
 import { QuickAddProductionForm } from '@/components/dashboard/QuickAddProductionForm';
 import { FarmSwitcher } from '@/components/dashboard/FarmSwitcher';
+import { AddModuleDialog } from '@/components/dashboard/AddModuleDialog';
 import { AnimalRecord, FeedRecord, HealthRecord, BreedingRecord, GeneticsRecord, InventoryRecord, ProductionRecord } from '@/types/animal';
 import { Bell, Menu, Plus, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -35,6 +36,7 @@ export default function AnimalDashboard() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [activeQuickForm, setActiveQuickForm] = useState<string | null>(null);
   const [editingModuleRecord, setEditingModuleRecord] = useState<ModuleRecordType | null>(null);
+  const [isAddModuleOpen, setIsAddModuleOpen] = useState(false);
   const { user, isAuthenticated, animalTypes, animalRecords, getStats, selectAnimalType, selectedFarm } = useFarm();
   const navigate = useNavigate();
 
@@ -293,6 +295,7 @@ export default function AnimalDashboard() {
                   enabledFeatures={animalType.features}
                   animalName={animalType.name}
                   onModuleClick={handleModuleSelect}
+                  onAddModules={() => setIsAddModuleOpen(true)}
                 />
               </div>
 
@@ -371,6 +374,13 @@ export default function AnimalDashboard() {
         onClose={handleCloseQuickForm}
         animalType={animalType}
         editingRecord={activeQuickForm === 'production' ? editingModuleRecord as ProductionRecord : null}
+      />
+
+      {/* Add Module Dialog */}
+      <AddModuleDialog
+        isOpen={isAddModuleOpen}
+        onClose={() => setIsAddModuleOpen(false)}
+        animalType={animalType}
       />
     </div>
   );
