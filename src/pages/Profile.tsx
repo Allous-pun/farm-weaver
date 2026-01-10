@@ -127,42 +127,51 @@ export default function Profile() {
     .slice(0, 2);
 
   return (
-    <div className="min-h-screen bg-background flex">
-      <DashboardSidebar
-        onAddAnimal={() => setShowAnimalWizard(true)}
-        activeModule={null}
-        onModuleSelect={() => {}}
-      />
+    <div className="min-h-screen bg-background flex w-full">
+      {/* Desktop Sidebar */}
+      <div className="relative">
+        <DashboardSidebar
+          onAddAnimal={() => setShowAnimalWizard(true)}
+          activeModule={null}
+          onModuleSelect={() => {}}
+        />
+      </div>
 
+      {/* Mobile Sidebar */}
       <MobileSidebar
         isOpen={showMobileSidebar}
         onClose={() => setShowMobileSidebar(false)}
         onAddAnimal={() => setShowAnimalWizard(true)}
       />
 
-      <main className="flex-1 flex flex-col min-h-screen">
-        {/* Header */}
-        <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-sm border-b border-border px-4 md:px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="md:hidden"
-                onClick={() => setShowMobileSidebar(true)}
-              >
-                <Menu className="h-5 w-5" />
-              </Button>
-              <div className="flex items-center gap-2">
-                <User className="h-5 w-5 text-primary" />
-                <h1 className="text-xl font-bold">Profile</h1>
-              </div>
+      {/* Main Content */}
+      <main className="flex-1 min-h-screen">
+        {/* Top Bar */}
+        <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-lg border-b border-border/50">
+          <div className="flex items-center justify-between px-4 md:px-6 h-16">
+            {/* Mobile Menu Button */}
+            <button
+              className="md:hidden p-2 -ml-2"
+              onClick={() => setShowMobileSidebar(true)}
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+
+            {/* Page Title */}
+            <div className="flex items-center gap-2">
+              <User className="h-5 w-5 text-primary" />
+              <h1 className="text-xl font-display font-semibold">Profile</h1>
             </div>
-            <NotificationsPanel />
+
+            {/* Right Side */}
+            <div className="flex items-center gap-3">
+              <NotificationsPanel />
+            </div>
           </div>
         </header>
 
-        <div className="flex-1 p-4 md:p-6 space-y-6 max-w-4xl">
+        {/* Page Content */}
+        <div className="p-4 md:p-6 lg:p-8 space-y-6 max-w-4xl">
           {/* Profile Overview */}
           <Card>
             <CardHeader>
@@ -368,6 +377,7 @@ export default function Profile() {
         </div>
       </main>
 
+      {/* Setup Wizard */}
       <AnimalSetupWizard
         isOpen={showAnimalWizard}
         onClose={() => setShowAnimalWizard(false)}
