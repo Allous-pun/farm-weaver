@@ -1,14 +1,16 @@
 import { TrackingFeature, FEATURE_OPTIONS } from '@/types/animal';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Plus } from 'lucide-react';
 
 interface ModuleGridProps {
   enabledFeatures: TrackingFeature[];
   animalName: string;
   onModuleClick?: (module: string) => void;
+  onAddModules?: () => void;
 }
 
-export function ModuleGrid({ enabledFeatures, animalName, onModuleClick }: ModuleGridProps) {
+export function ModuleGrid({ enabledFeatures, animalName, onModuleClick, onAddModules }: ModuleGridProps) {
   const enabledModules = FEATURE_OPTIONS.filter(f => enabledFeatures.includes(f.value));
+  const hasDisabledModules = enabledModules.length < FEATURE_OPTIONS.length;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -21,6 +23,27 @@ export function ModuleGrid({ enabledFeatures, animalName, onModuleClick }: Modul
           onClick={() => onModuleClick?.(module.value)}
         />
       ))}
+      
+      {/* Add More Modules Card */}
+      {hasDisabledModules && onAddModules && (
+        <button
+          onClick={onAddModules}
+          className="module-card group text-left w-full border-dashed border-2 border-border hover:border-primary/50 bg-muted/30"
+          style={{ animationDelay: `${enabledModules.length * 0.1}s` }}
+        >
+          <div className="flex flex-col items-center justify-center h-full min-h-[180px] gap-3">
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+              <Plus className="w-6 h-6 text-primary" />
+            </div>
+            <div className="text-center">
+              <h3 className="font-display font-semibold">Add More Modules</h3>
+              <p className="text-xs text-muted-foreground mt-1">
+                Enable additional tracking features
+              </p>
+            </div>
+          </div>
+        </button>
+      )}
     </div>
   );
 }

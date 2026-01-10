@@ -120,8 +120,8 @@ export function DashboardSidebar({ onAddAnimal, activeModule, onModuleSelect }: 
               const isExpanded = expandedAnimal === animal.id;
               const isSelected = currentAnimalId === animal.id;
               
-              // Always include 'records' module plus enabled features
-              const modules: string[] = ['records', ...animal.features];
+              // Only include 'records' module plus enabled features
+              const enabledModules: string[] = ['records', ...animal.features];
 
               return (
                 <div key={animal.id} className="space-y-0.5">
@@ -141,10 +141,10 @@ export function DashboardSidebar({ onAddAnimal, activeModule, onModuleSelect }: 
                     )}
                   </button>
 
-                  {/* Module Sub-items */}
+                  {/* Module Sub-items - Only show enabled modules */}
                   {!collapsed && isExpanded && (
                     <div className="ml-4 pl-4 border-l border-sidebar-border/50 space-y-0.5">
-                      {modules.map((module) => {
+                      {enabledModules.map((module) => {
                         const Icon = MODULE_ICONS[module] || ClipboardList;
                         const isModuleActive = isSelected && currentModule === module;
                         
