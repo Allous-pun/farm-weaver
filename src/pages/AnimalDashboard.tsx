@@ -288,7 +288,7 @@ export default function AnimalDashboard() {
                 measurementUnit={animalType.measurementUnit}
               />
 
-              {/* Modules */}
+              {/* Modules Grid */}
               <div>
                 <h2 className="text-lg font-display font-semibold mb-4">Management Modules</h2>
                 <ModuleGrid
@@ -299,17 +299,20 @@ export default function AnimalDashboard() {
                 />
               </div>
 
-              {/* Analytics Charts */}
-              <AnalyticsCharts animalTypeId={animalType.id} />
+              {/* Two Column Layout - Analytics & Calendar OR Module Content */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Left Column - Analytics */}
+                <div className="space-y-6">
+                  <AnalyticsCharts animalTypeId={animalType.id} />
+                  <ComparisonAnalytics animalTypeId={animalType.id} />
+                </div>
 
-              {/* Event Calendar */}
-              <EventCalendar />
-
-              {/* Comparison Analytics */}
-              <ComparisonAnalytics animalTypeId={animalType.id} />
-
-              {/* Summary Report Generator */}
-              <SummaryReportGenerator animalTypeId={animalType.id} />
+                {/* Right Column - Calendar & Reports */}
+                <div className="space-y-6">
+                  <EventCalendar />
+                  <SummaryReportGenerator animalTypeId={animalType.id} />
+                </div>
+              </div>
             </div>
           )}
         </div>
