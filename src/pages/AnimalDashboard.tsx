@@ -195,8 +195,8 @@ export default function AnimalDashboard() {
         {/* Page Content */}
         <div className="p-4 md:p-6 lg:p-8">
           {module ? (
-            // Module-specific view
-            <div className="space-y-4 animate-fade-in">
+            // Module-specific view with integrated analytics
+            <div className="space-y-6 animate-fade-in">
               {/* Back button */}
               <Button 
                 variant="ghost" 
@@ -238,12 +238,33 @@ export default function AnimalDashboard() {
                   />
                 </div>
               ) : isModuleView ? (
-                <ModuleRecordsList
-                  module={module}
-                  animalType={animalType}
-                  onAddNew={handleModuleAddNew}
-                  onEdit={handleModuleEdit}
-                />
+                // Module view with records + analytics side by side on desktop
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                  {/* Main content - Records list */}
+                  <div className="xl:col-span-2 space-y-6">
+                    <ModuleRecordsList
+                      module={module}
+                      animalType={animalType}
+                      onAddNew={handleModuleAddNew}
+                      onEdit={handleModuleEdit}
+                    />
+                  </div>
+                  
+                  {/* Sidebar - Analytics, Calendar, Reports */}
+                  <div className="space-y-6">
+                    {/* Module-specific analytics summary */}
+                    <AnalyticsCharts animalTypeId={animalType.id} />
+                    
+                    {/* Event Calendar */}
+                    <EventCalendar />
+                    
+                    {/* Comparison Analytics */}
+                    <ComparisonAnalytics animalTypeId={animalType.id} />
+                    
+                    {/* Summary Report Generator */}
+                    <SummaryReportGenerator animalTypeId={animalType.id} />
+                  </div>
+                </div>
               ) : (
                 <div className="text-center py-12">
                   <p className="text-muted-foreground">Module not found</p>
@@ -251,7 +272,7 @@ export default function AnimalDashboard() {
               )}
             </div>
           ) : (
-            // Animal overview
+            // Animal overview - clean stats + module grid only
             <div className="space-y-6 animate-fade-in">
               {/* Header */}
               <div className="flex items-center justify-between flex-wrap gap-4">
@@ -291,27 +312,13 @@ export default function AnimalDashboard() {
               {/* Modules Grid */}
               <div>
                 <h2 className="text-lg font-display font-semibold mb-4">Management Modules</h2>
+                <p className="text-sm text-muted-foreground mb-4">Select a module to view records and analytics</p>
                 <ModuleGrid
                   enabledFeatures={animalType.features}
                   animalName={animalType.name}
                   onModuleClick={handleModuleSelect}
                   onAddModules={() => setIsAddModuleOpen(true)}
                 />
-              </div>
-
-              {/* Two Column Layout - Analytics & Calendar OR Module Content */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Left Column - Analytics */}
-                <div className="space-y-6">
-                  <AnalyticsCharts animalTypeId={animalType.id} />
-                  <ComparisonAnalytics animalTypeId={animalType.id} />
-                </div>
-
-                {/* Right Column - Calendar & Reports */}
-                <div className="space-y-6">
-                  <EventCalendar />
-                  <SummaryReportGenerator animalTypeId={animalType.id} />
-                </div>
               </div>
             </div>
           )}
