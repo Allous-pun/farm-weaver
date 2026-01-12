@@ -24,6 +24,7 @@ import { TrendingUp, Activity, Package, BarChart3 } from 'lucide-react';
 
 interface AnalyticsChartsProps {
   animalTypeId: string;
+  moduleFilter?: 'production' | 'health' | 'inventory' | 'feed' | 'reproduction' | 'genetics';
 }
 
 const CHART_COLORS = [
@@ -34,7 +35,7 @@ const CHART_COLORS = [
   'hsl(var(--chart-5))',
 ];
 
-export function AnalyticsCharts({ animalTypeId }: AnalyticsChartsProps) {
+export function AnalyticsCharts({ animalTypeId, moduleFilter }: AnalyticsChartsProps) {
   const {
     productionRecords,
     healthRecords,
@@ -200,6 +201,159 @@ export function AnalyticsCharts({ animalTypeId }: AnalyticsChartsProps) {
     </div>
   );
 
+  // Map module to tab value
+  const moduleToTab: Record<string, string> = {
+    production: 'production',
+    health: 'health',
+    inventory: 'inventory',
+    feed: 'feed',
+    reproduction: 'health', // reproduction uses health-related analytics
+    genetics: 'production', // genetics uses production-related analytics
+  };
+
+  const activeTab = moduleFilter ? moduleToTab[moduleFilter] || 'production' : 'production';
+
+  // If module filter is set, show only that module's charts without tabs
+  if (moduleFilter) {
+    const getModuleTitle = () => {
+      switch (moduleFilter) {
+        case 'health': return 'Health Analytics';
+        case 'feed': return 'Feed Analytics';
+        case 'production': return 'Production Analytics';
+        case 'inventory': return 'Inventory Analytics';
+        case 'reproduction': return 'Breeding Analytics';
+        case 'genetics': return 'Genetics Analytics';
+        default: return 'Analytics';
+      }
+    };
+
+    return (
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base font-medium flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-primary" />
+            {getModuleTitle()}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {activeTab === 'health' && (
+            hasHealthData ? (
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie
+                    data={healthByType}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={40}
+                    outerRadius={70}
+                    paddingAngle={4}
+                    dataKey="value"
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    labelLine={false}
+                  >
+                    {healthByType.map((_, index) => (
+                      <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <NoDataPlaceholder message="No health data yet" />
+            )
+          )}
+          {activeTab === 'feed' && (
+            hasFeedData ? (
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={feedTrends.slice(-14)}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="date" tick={{ fontSize: 10 }} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10 }} tickLine={false} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                    }}
+                  />
+                  <Bar dataKey="quantity" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <NoDataPlaceholder message="No feed data yet" />
+            )
+          )}
+          {activeTab === 'production' && (
+            hasProductionData ? (
+              <ResponsiveContainer width="100%" height={200}>
+                <AreaChart data={productionTrends.slice(-14)}>
+                  <defs>
+                    <linearGradient id="prodGradientSmall" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="date" tick={{ fontSize: 10 }} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10 }} tickLine={false} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                    }}
+                  />
+                  <Area type="monotone" dataKey="quantity" stroke="hsl(var(--primary))" fill="url(#prodGradientSmall)" strokeWidth={2} />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <NoDataPlaceholder message="No production data yet" />
+            )
+          )}
+          {activeTab === 'inventory' && (
+            hasInventoryData ? (
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie
+                    data={inventoryByType}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={40}
+                    outerRadius={70}
+                    paddingAngle={4}
+                    dataKey="value"
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    labelLine={false}
+                  >
+                    {inventoryByType.map((_, index) => (
+                      <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <NoDataPlaceholder message="No inventory data yet" />
+            )
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Full tabbed view when no filter
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">

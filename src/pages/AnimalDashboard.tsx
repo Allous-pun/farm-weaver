@@ -10,7 +10,7 @@ import { ModuleGrid } from '@/components/dashboard/ModuleGrid';
 import { ModuleRecordsList } from '@/components/dashboard/ModuleRecordsList';
 import { AnimalRecordsList } from '@/components/dashboard/AnimalRecordsList';
 import { AnalyticsCharts } from '@/components/dashboard/AnalyticsCharts';
-import { ComparisonAnalytics } from '@/components/dashboard/ComparisonAnalytics';
+
 import { SummaryReportGenerator } from '@/components/dashboard/SummaryReportGenerator';
 import { EventCalendar } from '@/components/dashboard/EventCalendar';
 import { AnimalRecordForm } from '@/components/dashboard/AnimalRecordForm';
@@ -238,28 +238,26 @@ export default function AnimalDashboard() {
                   />
                 </div>
               ) : isModuleView ? (
-                // Module view with records + analytics side by side on desktop
-                <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                  {/* Main content - Records list */}
-                  <div className="xl:col-span-2 space-y-6">
-                    <ModuleRecordsList
-                      module={module}
-                      animalType={animalType}
-                      onAddNew={handleModuleAddNew}
-                      onEdit={handleModuleEdit}
-                    />
-                  </div>
+                // Module view with clean layout
+                <div className="space-y-6">
+                  {/* Records list - full width */}
+                  <ModuleRecordsList
+                    module={module}
+                    animalType={animalType}
+                    onAddNew={handleModuleAddNew}
+                    onEdit={handleModuleEdit}
+                  />
                   
-                  {/* Sidebar - Analytics, Calendar, Reports */}
-                  <div className="space-y-6">
-                    {/* Module-specific analytics summary */}
-                    <AnalyticsCharts animalTypeId={animalType.id} />
+                  {/* Module-specific analytics in a responsive grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {/* Module-specific analytics */}
+                    <AnalyticsCharts 
+                      animalTypeId={animalType.id} 
+                      moduleFilter={module as 'production' | 'health' | 'inventory' | 'feed' | 'reproduction' | 'genetics'} 
+                    />
                     
-                    {/* Event Calendar */}
+                    {/* Event Calendar - compact */}
                     <EventCalendar />
-                    
-                    {/* Comparison Analytics */}
-                    <ComparisonAnalytics animalTypeId={animalType.id} />
                     
                     {/* Summary Report Generator */}
                     <SummaryReportGenerator animalTypeId={animalType.id} />
