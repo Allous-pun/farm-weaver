@@ -46,9 +46,6 @@ export function GeneticsModuleContent({ animalTypeId }: GeneticsModuleContentPro
     const uniqueLineages = new Set(filteredGenetics.map(r => r.lineage)).size;
     const withParents = filteredGenetics.filter(r => r.sire || r.dam).length;
 
-    // Parse traits if available
-    const traitsCount: Record<string, number[]> = {};
-    filteredGenetics.forEach(r => {
     return {
       total: filteredGenetics.length,
       uniqueLineages,
