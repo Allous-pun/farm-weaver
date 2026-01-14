@@ -9,10 +9,15 @@ import { StatsOverview } from '@/components/dashboard/StatsOverview';
 import { ModuleGrid } from '@/components/dashboard/ModuleGrid';
 import { ModuleRecordsList } from '@/components/dashboard/ModuleRecordsList';
 import { AnimalRecordsList } from '@/components/dashboard/AnimalRecordsList';
-import { AnalyticsCharts } from '@/components/dashboard/AnalyticsCharts';
-
-import { SummaryReportGenerator } from '@/components/dashboard/SummaryReportGenerator';
-import { EventCalendar } from '@/components/dashboard/EventCalendar';
+import { ModuleFloatingActions } from '@/components/dashboard/modules/ModuleFloatingActions';
+import { FeedModuleContent } from '@/components/dashboard/modules/FeedModuleContent';
+import { HealthModuleContent } from '@/components/dashboard/modules/HealthModuleContent';
+import { ReproductionModuleContent } from '@/components/dashboard/modules/ReproductionModuleContent';
+import { GeneticsModuleContent } from '@/components/dashboard/modules/GeneticsModuleContent';
+import { InventoryModuleContent } from '@/components/dashboard/modules/InventoryModuleContent';
+import { ProductionModuleContent } from '@/components/dashboard/modules/ProductionModuleContent';
+import { ModuleCalendar } from '@/components/dashboard/modules/ModuleCalendar';
+import { ModuleReportCard } from '@/components/dashboard/modules/ModuleReportCard';
 import { AnimalRecordForm } from '@/components/dashboard/AnimalRecordForm';
 import { QuickAddHealthForm } from '@/components/dashboard/QuickAddHealthForm';
 import { QuickAddFeedingForm } from '@/components/dashboard/QuickAddFeedingForm';
@@ -238,7 +243,7 @@ export default function AnimalDashboard() {
                   />
                 </div>
               ) : isModuleView ? (
-                // Module view with clean layout
+                // Module view with records list and floating action buttons
                 <div className="space-y-6">
                   {/* Records list - full width */}
                   <ModuleRecordsList
@@ -248,20 +253,27 @@ export default function AnimalDashboard() {
                     onEdit={handleModuleEdit}
                   />
                   
-                  {/* Module-specific analytics in a responsive grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {/* Module-specific analytics */}
-                    <AnalyticsCharts 
-                      animalTypeId={animalType.id} 
-                      moduleFilter={module as 'production' | 'health' | 'inventory' | 'feed' | 'reproduction' | 'genetics'} 
-                    />
-                    
-                    {/* Event Calendar - compact */}
-                    <EventCalendar />
-                    
-                    {/* Summary Report Generator */}
-                    <SummaryReportGenerator animalTypeId={animalType.id} />
-                  </div>
+                  {/* Floating Action Buttons for module features */}
+                  <ModuleFloatingActions
+                    module={module}
+                    analyticsContent={
+                      module === 'feed' ? <FeedModuleContent animalTypeId={animalType.id} /> :
+                      module === 'health' ? <HealthModuleContent animalTypeId={animalType.id} /> :
+                      module === 'reproduction' ? <ReproductionModuleContent animalTypeId={animalType.id} /> :
+                      module === 'production' ? <ProductionModuleContent animalTypeId={animalType.id} /> :
+                      null
+                    }
+                    calendarContent={
+                      ['feed', 'health', 'reproduction', 'production'].includes(module) 
+                        ? <ModuleCalendar module={module as 'feed' | 'health' | 'reproduction' | 'production'} animalTypeId={animalType.id} />
+                        : null
+                    }
+                    reportContent={<ModuleReportCard module={module as 'feed' | 'health' | 'reproduction' | 'genetics' | 'inventory' | 'production'} animalTypeId={animalType.id} />}
+                    showAnalytics={['feed', 'health', 'reproduction', 'production'].includes(module)}
+                    showCalendar={['feed', 'health', 'reproduction', 'production'].includes(module)}
+                    showReport={true}
+                    showAI={['feed', 'health', 'reproduction', 'genetics'].includes(module)}
+                  />
                 </div>
               ) : (
                 <div className="text-center py-12">
